@@ -15,9 +15,6 @@
     "bun",
     "official"
   ],
-  "store_urls": [
-    "https://***REMOVED***"
-  ],
   "provides": {
     "provider_types": [
       "opencode"

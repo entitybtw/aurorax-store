@@ -108,7 +108,6 @@ curl -X POST http://gateway:7841/admin/api/v1/sidecar/extensions/import \
 | `oauth` | object | Device-flow OAuth (`server`, `client_id`, `verification_base`) |
 | `files` | object | Files materialized on apply (path → content) |
 | `provides` | object | `{ provider_types, features }` |
-| `store_urls` | string[] | Extra catalog bases for the dashboard |
 | `ui` | object | Dashboard presentation (see below) |
 | `requirements` | string[] | Human-readable install requirements |
 | `builtin` | bool | Always `false` in this store |
