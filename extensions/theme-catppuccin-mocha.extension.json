@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "id": "theme-catppuccin-mocha",
+  "name": "Catppuccin Mocha",
+  "tagline": "Catppuccin Mocha dashboard theme",
+  "description": "Dashboard theme using the dark Catppuccin Mocha palette (mauve accent on crust/surface grays). Editable accent, background, surface, text and border colors.",
+  "version": "1",
+  "author": "aurora",
+  "license": "MIT",
+  "type": "theme",
+  "tags": [
+    "theme",
+    "catppuccin",
+    "official"
+  ],
+  "requirements": [],
+  "settings": {},
+  "ui": {
+    "accent": "#cba6f7",
+    "theme": {
+      "--bg": "#1e1e2e",
+      "--bg-surface": "#313244",
+      "--bg-surface-hover": "#45475a",
+      "--bg-elevated": "#585b70",
+      "--text": "#cdd6f4",
+      "--text-muted": "#a6adc8",
+      "--text-inverse": "#1e1e2e",
+      "--border": "#45475a",
+      "--border-subtle": "rgba(205,214,244,0.06)",
+      "--accent": "#cba6f7",
+      "--accent-hover": "#b4befe",
+      "--accent-foreground": "#1e1e2e",
+      "--success": "#a6e3a1",
+      "--warning": "#f9e2af",
+      "--danger": "#f38ba8",
+      "--info": "#89b4fa",
+      "--radius-sm": "2px",
+      "--radius-md": "2px",
+      "--radius-lg": "2px"
+    },
+    "fields": [
+      {
+        "key": "accent",
+        "label": "Accent",
+        "type": "color",
+        "default": "#cba6f7"
+      },
+      {
+        "key": "--bg",
+        "label": "Background",
+        "type": "color",
+        "default": "#1e1e2e"
+      },
+      {
+        "key": "--bg-surface",
+        "label": "Surface",
+        "type": "color",
+        "default": "#313244"
+      },
+      {
+        "key": "--text",
+        "label": "Text",
+        "type": "color",
+        "default": "#cdd6f4"
+      },
+      {
+        "key": "--border",
+        "label": "Border",
+        "type": "color",
+        "default": "#45475a"
+      },
+      {
+        "key": "--radius-sm",
+        "label": "Radius",
+        "type": "text",
+        "default": "2px"
+      }
+    ],
+    "help": "Apply this extension to switch the dashboard theme. Disable it to revert."
+  }
+}

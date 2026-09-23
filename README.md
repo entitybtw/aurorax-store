@@ -98,7 +98,7 @@ curl -X POST http://gateway:7841/admin/api/v1/sidecar/extensions/import \
 | `author` | string | Author / team |
 | `homepage` | string | Project URL |
 | `tags` | string[] | Search tags |
-| `type` | string | Usually `sidecar` |
+| `type` | string | `sidecar` or `theme` |
 | `base_url` | string | Sidecar base URL on apply |
 | `user_agent` | string | Optional UA override |
 | `default_auth` | string | Default `Authorization` scheme |
@@ -156,6 +156,38 @@ Icons: whitelist only (`layout`, `box`, `layers`, `network`, `database`, `termin
 
 ---
 
+## Bundled extensions
+
+### OpenCode — split into 4
+
+| id | role |
+|----|------|
+| `opencode` | **Main** — adds the whole `opencode` provider type (`provides.provider_types` + `inject_tool_types`), headers, tools, files |
+| `opencode-zen` | Zen free-tier **client** profile (headers, tools, OAuth block) |
+| `opencode-go` | `opencode-go` **client** profile (same headers/tools, no OAuth) |
+| `opencode-oauth` | **Device-flow OAuth only** (`provides.features: ["oauth"]`, no provider type, no tools) |
+
+Install `opencode` for the provider type; pick `opencode-zen` or `opencode-go` for the
+client signature you run; add `opencode-oauth` to wire device-flow auth.
+
+### Themes
+
+Pure-UI extensions (`type: "theme"`, tagged `theme`) — no `base_url`, headers or tools.
+Apply the extension in the dashboard to switch the theme; disable it to revert.
+
+| id | description |
+|----|-------------|
+| `theme-minimal` | Flat zero-radius minimal theme (entbtw / ***REMOVED*** style), warm sand accent |
+| `theme-catppuccin-mocha` | Catppuccin Mocha (dark) |
+| `theme-catppuccin-latte` | Catppuccin Latte (light) |
+| `theme-catppuccin-frappe` | Catppuccin Frappé |
+| `theme-catppuccin-macchiato` | Catppuccin Macchiato |
+
+Theme extensions expose editable color fields (accent, background, surface, text,
+border, radius) under `ui.fields`.
+
+---
+
 ## Hosting
 
 Plain static files. Any web server with **directory listing** for `extensions/`:
@@ -193,7 +225,8 @@ script.js
 README.md
 api/v1/extensions.json   # served as GET /api/v1/extensions
 extensions/
-  {id}.extension.json
+  {id}.extension.json      # sidecar extensions (opencode, opencode-zen, …)
+  theme-*.extension.json   # theme extensions (pure UI)
   …
 ```
 

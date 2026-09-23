@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "id": "theme-catppuccin-frappe",
+  "name": "Catppuccin Frappé",
+  "tagline": "Catppuccin Frappé dashboard theme",
+  "description": "Dashboard theme using the Catppuccin Frappé palette (mauve accent on dark base). Editable accent, background, surface, text and border colors.",
+  "version": "1",
+  "author": "aurora",
+  "license": "MIT",
+  "type": "theme",
+  "tags": [
+    "theme",
+    "catppuccin",
+    "official"
+  ],
+  "requirements": [],
+  "settings": {},
+  "ui": {
+    "accent": "#ca9ee6",
+    "theme": {
+      "--bg": "#303446",
+      "--bg-surface": "#292c3c",
+      "--bg-surface-hover": "#414559",
+      "--bg-elevated": "#51576d",
+      "--text": "#c6d0f5",
+      "--text-muted": "#a5adce",
+      "--text-inverse": "#303446",
+      "--border": "#414559",
+      "--border-subtle": "rgba(198,208,245,0.06)",
+      "--accent": "#ca9ee6",
+      "--accent-hover": "#f2d5cf",
+      "--accent-foreground": "#303446",
+      "--success": "#a6e3a1",
+      "--warning": "#ef9f76",
+      "--danger": "#e78284",
+      "--info": "#8caaee",
+      "--radius-sm": "2px",
+      "--radius-md": "2px",
+      "--radius-lg": "2px"
+    },
+    "fields": [
+      {
+        "key": "accent",
+        "label": "Accent",
+        "type": "color",
+        "default": "#ca9ee6"
+      },
+      {
+        "key": "--bg",
+        "label": "Background",
+        "type": "color",
+        "default": "#303446"
+      },
+      {
+        "key": "--bg-surface",
+        "label": "Surface",
+        "type": "color",
+        "default": "#292c3c"
+      },
+      {
+        "key": "--text",
+        "label": "Text",
+        "type": "color",
+        "default": "#c6d0f5"
+      },
+      {
+        "key": "--border",
+        "label": "Border",
+        "type": "color",
+        "default": "#414559"
+      },
+      {
+        "key": "--radius-sm",
+        "label": "Radius",
+        "type": "text",
+        "default": "2px"
+      }
+    ],
+    "help": "Apply this extension to switch the dashboard theme. Disable it to revert."
+  }
+}

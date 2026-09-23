@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "id": "opencode-oauth",
+  "name": "OpenCode OAuth",
+  "tagline": "OAuth device-flow for OpenCode providers",
+  "description": "OAuth device-flow wiring (server, client_id, verification base) for OpenCode providers. Provides the oauth feature only — install opencode, opencode-zen or opencode-go for the provider type and client signature.",
+  "version": "1",
+  "author": "aurora",
+  "homepage": "https://opencode.ai",
+  "license": "MIT",
+  "type": "sidecar",
+  "tags": [
+    "opencode",
+    "oauth",
+    "official"
+  ],
+  "provides": {
+    "features": [
+      "oauth"
+    ]
+  },
+  "base_url": "https://opencode.ai/zen/v1",
+  "oauth": {
+    "server": "https://opencode.ai/console",
+    "client_id": "opencode-cli",
+    "verification_base": "https://opencode.ai"
+  },
+  "settings": {
+    "oauth_server": "https://opencode.ai/console",
+    "oauth_client_id": "opencode-cli",
+    "oauth_verification_base": "https://opencode.ai"
+  },
+  "requirements": [],
+  "notes": [
+    "Pairs with opencode, opencode-zen or opencode-go for the provider type and client signature.",
+    "Review third-party extensions before installing them from a store."
+  ],
+  "ui": {
+    "accent": "#E87040",
+    "docs_url": "https://opencode.ai/docs/configuration",
+    "help": "Wires device-flow OAuth for OpenCode providers. No headers or tools — combine with an OpenCode client extension."
+  }
+}

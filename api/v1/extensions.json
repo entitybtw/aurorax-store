@@ -3,14 +3,117 @@
     {
       "id": "opencode",
       "name": "OpenCode",
-      "tagline": "Zen and opencode-go clients",
+      "tagline": "Official OpenCode provider type",
+      "type": "sidecar",
+      "version": "1",
+      "author": "aurora",
+      "tags": [
+        "opencode",
+        "official"
+      ]
+    },
+    {
+      "id": "opencode-zen",
+      "name": "OpenCode Zen",
+      "tagline": "Free-tier Zen client profile",
       "type": "sidecar",
       "version": "1",
       "author": "aurora",
       "tags": [
         "opencode",
         "zen",
-        "bun",
+        "official"
+      ]
+    },
+    {
+      "id": "opencode-go",
+      "name": "OpenCode Go",
+      "tagline": "opencode-go client profile",
+      "type": "sidecar",
+      "version": "1",
+      "author": "aurora",
+      "tags": [
+        "opencode",
+        "go",
+        "official"
+      ]
+    },
+    {
+      "id": "opencode-oauth",
+      "name": "OpenCode OAuth",
+      "tagline": "OAuth device-flow for OpenCode providers",
+      "type": "sidecar",
+      "version": "1",
+      "author": "aurora",
+      "tags": [
+        "opencode",
+        "oauth",
+        "official"
+      ]
+    },
+    {
+      "id": "theme-minimal",
+      "name": "Minimal",
+      "tagline": "Flat zero-radius minimal theme",
+      "type": "theme",
+      "version": "1",
+      "author": "aurora",
+      "tags": [
+        "theme",
+        "minimal",
+        "official"
+      ]
+    },
+    {
+      "id": "theme-catppuccin-mocha",
+      "name": "Catppuccin Mocha",
+      "tagline": "Catppuccin Mocha dashboard theme",
+      "type": "theme",
+      "version": "1",
+      "author": "aurora",
+      "tags": [
+        "theme",
+        "catppuccin",
+        "official"
+      ]
+    },
+    {
+      "id": "theme-catppuccin-latte",
+      "name": "Catppuccin Latte",
+      "tagline": "Catppuccin Latte (light) dashboard theme",
+      "type": "theme",
+      "version": "1",
+      "author": "aurora",
+      "tags": [
+        "theme",
+        "catppuccin",
+        "light",
+        "official"
+      ]
+    },
+    {
+      "id": "theme-catppuccin-frappe",
+      "name": "Catppuccin Frappé",
+      "tagline": "Catppuccin Frappé dashboard theme",
+      "type": "theme",
+      "version": "1",
+      "author": "aurora",
+      "tags": [
+        "theme",
+        "catppuccin",
+        "official"
+      ]
+    },
+    {
+      "id": "theme-catppuccin-macchiato",
+      "name": "Catppuccin Macchiato",
+      "tagline": "Catppuccin Macchiato dashboard theme",
+      "type": "theme",
+      "version": "1",
+      "author": "aurora",
+      "tags": [
+        "theme",
+        "catppuccin",
         "official"
       ]
     }

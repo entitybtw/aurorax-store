@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "id": "theme-catppuccin-latte",
+  "name": "Catppuccin Latte",
+  "tagline": "Catppuccin Latte (light) dashboard theme",
+  "description": "Light dashboard theme using the Catppuccin Latte palette (purple accent on light base). Editable accent, background, surface, text and border colors.",
+  "version": "1",
+  "author": "aurora",
+  "license": "MIT",
+  "type": "theme",
+  "tags": [
+    "theme",
+    "catppuccin",
+    "light",
+    "official"
+  ],
+  "requirements": [],
+  "settings": {},
+  "ui": {
+    "accent": "#8839ef",
+    "theme": {
+      "--bg": "#eff1f5",
+      "--bg-surface": "#e6e9ef",
+      "--bg-surface-hover": "#dce0e8",
+      "--bg-elevated": "#ccd0da",
+      "--text": "#4c4f69",
+      "--text-muted": "#6c6f85",
+      "--text-inverse": "#eff1f5",
+      "--border": "#bcc0cc",
+      "--border-subtle": "rgba(76,79,105,0.06)",
+      "--accent": "#8839ef",
+      "--accent-hover": "#7287fd",
+      "--accent-foreground": "#eff1f5",
+      "--success": "#40a02b",
+      "--warning": "#df8e1d",
+      "--danger": "#d20f39",
+      "--info": "#1e66f5",
+      "--radius-sm": "2px",
+      "--radius-md": "2px",
+      "--radius-lg": "2px"
+    },
+    "fields": [
+      {
+        "key": "accent",
+        "label": "Accent",
+        "type": "color",
+        "default": "#8839ef"
+      },
+      {
+        "key": "--bg",
+        "label": "Background",
+        "type": "color",
+        "default": "#eff1f5"
+      },
+      {
+        "key": "--bg-surface",
+        "label": "Surface",
+        "type": "color",
+        "default": "#e6e9ef"
+      },
+      {
+        "key": "--text",
+        "label": "Text",
+        "type": "color",
+        "default": "#4c4f69"
+      },
+      {
+        "key": "--border",
+        "label": "Border",
+        "type": "color",
+        "default": "#bcc0cc"
+      },
+      {
+        "key": "--radius-sm",
+        "label": "Radius",
+        "type": "text",
+        "default": "2px"
+      }
+    ],
+    "help": "Apply this extension to switch the dashboard theme. Disable it to revert."
+  }
+}
