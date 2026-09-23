@@ -1,0 +1,18 @@
+{
+  "extensions": [
+    {
+      "id": "opencode",
+      "name": "OpenCode",
+      "tagline": "Zen and opencode-go clients",
+      "type": "sidecar",
+      "version": "1",
+      "author": "aurora",
+      "tags": [
+        "opencode",
+        "zen",
+        "bun",
+        "official"
+      ]
+    }
+  ]
+}
