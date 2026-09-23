@@ -2,39 +2,16 @@
   "extensions": [
     {
       "id": "opencode",
-      "name": "OpenCode",
-      "tagline": "Official OpenCode provider type",
+      "name": "CLI Emulation",
+      "tagline": "CLI emulation profile — provider type, headers, tools",
       "type": "sidecar",
       "version": "1",
       "author": "aurora",
       "tags": [
         "opencode",
-        "official"
-      ]
-    },
-    {
-      "id": "opencode-zen",
-      "name": "OpenCode Zen",
-      "tagline": "Free-tier Zen client profile",
-      "type": "sidecar",
-      "version": "1",
-      "author": "aurora",
-      "tags": [
-        "opencode",
-        "zen",
-        "official"
-      ]
-    },
-    {
-      "id": "opencode-go",
-      "name": "OpenCode Go",
-      "tagline": "opencode-go client profile",
-      "type": "sidecar",
-      "version": "1",
-      "author": "aurora",
-      "tags": [
-        "opencode",
-        "go",
+        "cli",
+        "headers",
+        "tools",
         "official"
       ]
     },

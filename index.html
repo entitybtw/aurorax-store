@@ -48,13 +48,12 @@
       <table>
         <thead><tr><th>Path</th><th>Description</th></tr></thead>
         <tbody>
-          <tr><td class="mono">GET /api/v1/extensions</td><td><code class="mono">{ extensions: [{ id, name, tagline, … }] }</code></td></tr>
-          <tr><td class="mono">GET /api/v1/extensions/{id}/raw</td><td>Raw extension JSON (import into Aurora)</td></tr>
-          <tr><td class="mono">GET /extensions/{id}.extension.json</td><td>Direct file (same content)</td></tr>
+          <tr><td class="mono">GET /api/v1/extensions.json</td><td><code class="mono">{ extensions: [{ id, name, tagline, … }] }</code></td></tr>
+          <tr><td class="mono">GET /extensions/{id}.extension.json</td><td>Raw extension JSON (import into Aurora)</td></tr>
         </tbody>
       </table>
-      <pre class="json">curl https://***REMOVED***/api/v1/extensions
-curl https://***REMOVED***/api/v1/extensions/opencode/raw</pre>
+      <pre class="json">curl https://entitybtw.github.io/aurorax-store/api/v1/extensions.json
+curl https://entitybtw.github.io/aurorax-store/extensions/opencode.extension.json</pre>
     </section>
   </div>
 

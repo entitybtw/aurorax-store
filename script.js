@@ -1,17 +1,16 @@
 const $ = (s) => document.querySelector(s);
 
 /**
- * Static extension repo API:
- *   GET ./api/v1/extensions        → { extensions: [info…] }
- *   GET ./api/v1/extensions/{id}/raw → raw extension JSON
+ * Static extension repo API (works on plain static hosts, e.g. GitHub Pages):
+ *   GET ./api/v1/extensions.json              → { extensions: [info…] }
+ *   GET ./extensions/{id}.extension.json      → raw extension JSON
  *
- * This page only renders that list + raw content. Multi-repo management
- * lives in Aurora Settings → Extensions.
+ * The page always fetches the real files, so it works on any static host.
  */
-const API_LIST = "./api/v1/extensions";
+const API_LIST = "./api/v1/extensions.json";
 
 function apiRaw(id) {
-  return `./api/v1/extensions/${encodeURIComponent(id)}/raw`;
+  return `./extensions/${encodeURIComponent(id)}.extension.json`;
 }
 
 function escapeHtml(s) {
@@ -115,7 +114,7 @@ async function loadList() {
     if (seq !== loadSeq) return;
     el.innerHTML = `<div class="error">${escapeHtml(e.message)}</div>
       <p class="empty" style="margin-top:12px">
-        Expected <code class="mono">GET /api/v1/extensions</code> →
+        Expected <code class="mono">GET ./api/v1/extensions.json</code> →
         <code class="mono">{ extensions: [...] }</code>.
       </p>`;
   }

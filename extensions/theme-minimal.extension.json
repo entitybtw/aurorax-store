@@ -3,7 +3,7 @@
   "id": "theme-minimal",
   "name": "Minimal",
   "tagline": "Flat zero-radius minimal theme",
-  "description": "Dashboard theme inspired by the entbtw and ***REMOVED*** sites: flat surfaces, zero border radius, warm sand accent and system fonts. Editable accent, background, surface, text, border, radius and display font.",
+  "description": "Dashboard theme with flat surfaces, zero border radius, warm sand accent and system fonts. Editable accent, background, surface, text, border, radius and display font.",
   "version": "1",
   "author": "aurora",
   "license": "MIT",

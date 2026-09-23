@@ -158,17 +158,14 @@ Icons: whitelist only (`layout`, `box`, `layers`, `network`, `database`, `termin
 
 ## Bundled extensions
 
-### OpenCode — split into 4
+### OpenCode — split into 2
 
 | id | role |
 |----|------|
-| `opencode` | **Main** — adds the whole `opencode` provider type (`provides.provider_types` + `inject_tool_types`), headers, tools, files |
-| `opencode-zen` | Zen free-tier **client** profile (headers, tools, OAuth block) |
-| `opencode-go` | `opencode-go` **client** profile (same headers/tools, no OAuth) |
+| `opencode` | **CLI emulation** — adds the whole `opencode` provider type (`provides.provider_types` + `inject_tool_types`), client headers, tools and files (the CLI profile) |
 | `opencode-oauth` | **Device-flow OAuth only** (`provides.features: ["oauth"]`, no provider type, no tools) |
 
-Install `opencode` for the provider type; pick `opencode-zen` or `opencode-go` for the
-client signature you run; add `opencode-oauth` to wire device-flow auth.
+Install `opencode` for the provider type and client signature; add `opencode-oauth` to wire device-flow auth.
 
 ### Themes
 
@@ -177,7 +174,7 @@ Apply the extension in the dashboard to switch the theme; disable it to revert.
 
 | id | description |
 |----|-------------|
-| `theme-minimal` | Flat zero-radius minimal theme (entbtw / ***REMOVED*** style), warm sand accent |
+| `theme-minimal` | Flat zero-radius minimal theme, warm sand accent |
 | `theme-catppuccin-mocha` | Catppuccin Mocha (dark) |
 | `theme-catppuccin-latte` | Catppuccin Latte (light) |
 | `theme-catppuccin-frappe` | Catppuccin Frappé |
@@ -190,29 +187,9 @@ border, radius) under `ui.fields`.
 
 ## Hosting
 
-Plain static files. Any web server with **directory listing** for `extensions/`:
-
-```text
-server {
-
-  server_name ***REMOVED***;
-
-  index index.html;
-
-
-
-  }
-
-
-
-
-
-  }
-}
-```
-
-Enable HTTPS (certbot). Add the store base URL in Aurora under
-**Settings → Extensions** (the gateway fetches `{base}/api/v1/extensions`).
+Plain static files served by **GitHub Pages** from this repository root.
+No server config needed. Add the store base URL in Aurora under
+**Settings → Extensions** (the gateway fetches `{base}/api/v1/extensions.json`).
 
 ---
 
@@ -223,9 +200,9 @@ index.html          # human catalog (reads the API only)
 style.css
 script.js
 README.md
-api/v1/extensions.json   # served as GET /api/v1/extensions
+api/v1/extensions.json   # served as GET /api/v1/extensions.json
 extensions/
-  {id}.extension.json      # sidecar extensions (opencode, opencode-zen, …)
+  {id}.extension.json      # sidecar extensions (opencode, opencode-oauth, …)
   theme-*.extension.json   # theme extensions (pure UI)
   …
 ```
@@ -234,7 +211,10 @@ extensions/
 
 | Path | Response |
 |------|----------|
-| `GET /api/v1/extensions` | `{ "extensions": [ { id, name, tagline, type, version, author, tags } ] }` |
-| `GET /api/v1/extensions/{id}/raw` | full extension JSON |
+| `GET /api/v1/extensions.json` | `{ "extensions": [ { id, name, tagline, type, version, author, tags } ] }` |
+| `GET /extensions/{id}.extension.json` | full extension JSON |
+
+Static hosts serve only these real file paths, which is why the catalog page
+fetches them directly.
 
 No other endpoints. Multi-repo is Aurora-side only.
