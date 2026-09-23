@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AuroraX Store — Gateway community extension repo</title>
   <meta name="description" content="Gateway community extension repo for Aurora. Static catalog of community extensions — review JSON before importing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@400;500;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
@@ -38,22 +41,6 @@
 
     <div id="catalog"></div>
     <div id="detail" hidden></div>
-
-    <section class="panel repos">
-      <h2>Repos</h2>
-      <p class="hint">
-        Extensions on this page are aggregated from every repo below. Curated repos
-        live in <code class="mono">repos.json</code> (open a PR to add yours); repos you
-        add yourself are kept in this browser.
-      </p>
-      <ul id="repo-list" class="repo-list"></ul>
-      <div id="repo-errors" class="repo-errors"></div>
-      <form id="repo-add" class="repo-add">
-        <input id="repo-url" type="url" placeholder="https://example.github.io/my-store" required />
-        <input id="repo-name" type="text" placeholder="Name (optional)" />
-        <button type="submit">Add repo</button>
-      </form>
-    </section>
 
     <section class="panel api">
       <h2>API</h2>
