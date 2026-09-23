@@ -196,16 +196,52 @@ No server config needed. Add the store base URL in Aurora under
 ## Layout
 
 ```
-index.html          # human catalog (reads the API only)
+index.html          # human catalog (aggregates every repo below)
 style.css
 script.js
 README.md
+repos.json            # curated community repos (PR to add yours)
 api/v1/extensions.json   # served as GET /api/v1/extensions.json
 extensions/
   {id}.extension.json      # sidecar extensions (opencode, opencode-oauth, …)
   theme-*.extension.json   # theme extensions (pure UI)
   …
 ```
+
+## Repos
+
+The catalog page is **multi-repo**: it merges extensions from
+
+1. **this store** (always first),
+2. **curated repos** listed in `repos.json`,
+3. **repos you add** in the page (kept in the browser's `localStorage`).
+
+Each card is labelled with the repo it came from, and the **Repos** panel lists
+every source with its extension count (a failing repo is reported inline instead
+of breaking the page).
+
+### Adding a repo
+
+**From the page** — paste a store URL (must be `http(s)://…`) into the Repos
+panel; it is remembered in this browser and you can remove it again.
+
+**For everyone** — add an entry to `repos.json` and open a PR:
+
+```json
+{
+  "repos": [
+    { "name": "My Store", "url": "https://example.github.io/my-store" }
+  ]
+}
+```
+
+A repo must expose the same two static paths as this store
+(`/api/v1/extensions.json` and `/extensions/{id}.extension.json`).
+
+### In Aurora
+
+Add each store base URL under **Settings → Extensions** — Aurora browses one
+store at a time, the aggregation on this page is only for humans.
 
 ## API (what Aurora parses)
 
@@ -214,7 +250,8 @@ extensions/
 | `GET /api/v1/extensions.json` | `{ "extensions": [ { id, name, tagline, type, version, author, tags } ] }` |
 | `GET /extensions/{id}.extension.json` | full extension JSON |
 
-Static hosts serve only these real file paths, which is why the catalog page
-fetches them directly.
+Static hosts serve only these real file paths, which is why both this page and
+Aurora fetch them directly. Aurora additionally fills in a `raw_url` per entry
+when browsing a store.
 
-No other endpoints. Multi-repo is Aurora-side only.
+No other endpoints.
