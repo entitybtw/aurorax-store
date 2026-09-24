@@ -85,6 +85,19 @@ curl -X POST http://gateway:7841/admin/api/v1/sidecar/extensions/import \
   -d '{"url":"http://store/extensions/my-ext.extension.json"}'
 ```
 
+### Three layers
+
+Aurora extensions fall into three composable layers (an extension may mix them):
+
+| Layer | Typical `type` | Role |
+|-------|----------------|------|
+| **Theme** | `theme` | Dashboard palette via `ui.theme` / `ui.theme_light` / `ui.theme_dark` |
+| **Preset** | `sidecar` | Sidecar routing, headers, tools, retries, OAuth endpoints |
+| **Addon** | `sidecar` / future `addon` | Optional capabilities via `provides` (`provider_types`, `features`) and `files` |
+
+Gateway deep-dives live in the Aurora repo:  
+`documentation/extensions/{README,THEMES,PRESETS,ADDONS}.md`.
+
 ### Top-level fields
 
 | Field | Type | Description |
