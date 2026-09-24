@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "id": "claude-oauth",
+  "name": "Authorization-code OAuth",
+  "tagline": "OAuth 2.0 authorization-code + PKCE for the optional provider type",
+  "description": "Wires OAuth 2.0 authorization-code + PKCE (authorize_url, token_url, client_id, scopes) for the optional provider type. Provides the oauth feature only. Install the matching provider-type extension alongside it for headers, tools and client signature. Endpoints and scopes are supplied by this JSON — the gateway does not hardcode them.",
+  "version": "1",
+  "author": "aurora",
+  "homepage": "",
+  "license": "MIT",
+  "type": "sidecar",
+  "provides": {
+    "features": [
+      "oauth"
+    ]
+  },
+  "oauth": {
+    "grant": "authorization_code",
+    "authorize_url": "https://claude.com/cai/oauth/authorize",
+    "token_url": "https://platform.claude.com/v1/oauth/token",
+    "token_style": "json",
+    "client_id": "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
+    "scopes": "org:create_api_key user:profile user:inference user:sessions:claude_code user:mcp_servers user:file_upload",
+    "state_is_verifier": false,
+    "redirect_uri": "http://127.0.0.1:54545/callback"
+  },
+  "settings": {
+    "oauth_grant": "authorization_code",
+    "oauth_authorize_url": "https://claude.com/cai/oauth/authorize",
+    "oauth_token_url": "https://platform.claude.com/v1/oauth/token",
+    "oauth_token_style": "json",
+    "oauth_client_id": "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
+    "oauth_scopes": "org:create_api_key user:profile user:inference user:sessions:claude_code user:mcp_servers user:file_upload",
+    "oauth_redirect_uri": "http://127.0.0.1:54545/callback"
+  },
+  "requirements": [],
+  "notes": [
+    "Authorization-code + PKCE (S256). Paste CODE#STATE or the full callback URL after the browser redirects to localhost.",
+    "Pairs with a provider-type extension for base_url, headers and tools.",
+    "Review third-party extensions before installing them from a store."
+  ],
+  "ui": {
+    "accent": "#D97757",
+    "docs_url": "",
+    "help": "OAuth 2.0 authorization-code + PKCE for the optional provider type. Endpoints come from this extension — no hardcoded core origins."
+  }
+}

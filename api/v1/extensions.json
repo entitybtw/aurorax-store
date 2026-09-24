@@ -17,6 +17,14 @@
       "author": "aurora"
     },
     {
+      "id": "claude-oauth",
+      "name": "Authorization-code OAuth",
+      "tagline": "OAuth 2.0 authorization-code + PKCE for the optional provider type",
+      "type": "sidecar",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
       "id": "theme-catppuccin-mocha",
       "name": "Catppuccin Mocha",
       "tagline": "Catppuccin Mocha dashboard theme",
