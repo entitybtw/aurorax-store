@@ -6,40 +6,15 @@
       "tagline": "CLI emulation profile — provider type, headers, tools",
       "type": "sidecar",
       "version": "1",
-      "author": "aurora",
-      "tags": [
-        "opencode",
-        "cli",
-        "headers",
-        "tools",
-        "official"
-      ]
+      "author": "aurora"
     },
     {
       "id": "opencode-oauth",
       "name": "OpenCode OAuth",
-      "tagline": "OAuth device-flow for OpenCode providers",
+      "tagline": "OAuth device-flow for the optional provider type",
       "type": "sidecar",
       "version": "1",
-      "author": "aurora",
-      "tags": [
-        "opencode",
-        "oauth",
-        "official"
-      ]
-    },
-    {
-      "id": "theme-minimal",
-      "name": "Minimal",
-      "tagline": "Flat zero-radius minimal theme",
-      "type": "theme",
-      "version": "1",
-      "author": "aurora",
-      "tags": [
-        "theme",
-        "minimal",
-        "official"
-      ]
+      "author": "aurora"
     },
     {
       "id": "theme-catppuccin-mocha",
@@ -47,12 +22,7 @@
       "tagline": "Catppuccin Mocha dashboard theme",
       "type": "theme",
       "version": "1",
-      "author": "aurora",
-      "tags": [
-        "theme",
-        "catppuccin",
-        "official"
-      ]
+      "author": "aurora"
     },
     {
       "id": "theme-catppuccin-latte",
@@ -60,13 +30,7 @@
       "tagline": "Catppuccin Latte (light) dashboard theme",
       "type": "theme",
       "version": "1",
-      "author": "aurora",
-      "tags": [
-        "theme",
-        "catppuccin",
-        "light",
-        "official"
-      ]
+      "author": "aurora"
     },
     {
       "id": "theme-catppuccin-frappe",
@@ -74,12 +38,7 @@
       "tagline": "Catppuccin Frappé dashboard theme",
       "type": "theme",
       "version": "1",
-      "author": "aurora",
-      "tags": [
-        "theme",
-        "catppuccin",
-        "official"
-      ]
+      "author": "aurora"
     },
     {
       "id": "theme-catppuccin-macchiato",
@@ -87,12 +46,7 @@
       "tagline": "Catppuccin Macchiato dashboard theme",
       "type": "theme",
       "version": "1",
-      "author": "aurora",
-      "tags": [
-        "theme",
-        "catppuccin",
-        "official"
-      ]
+      "author": "aurora"
     }
   ]
 }

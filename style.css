@@ -26,6 +26,7 @@ html, body {
   background: var(--bg); color: var(--text);
   font: 15px/1.5 var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; color: var(--accent-hover); }
@@ -35,7 +36,7 @@ header.top {
   display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;
   padding: 18px 0 10px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 14px;
 }
-.brand { display: flex; align-items: center; gap: 14px; }
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .logo { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: var(--text); flex: 0 0 auto; }
 .logo svg { display: block; width: 36px; height: 36px; }
 .brand h1 {
@@ -68,8 +69,14 @@ button {
 button:hover { border-color: var(--accent); background: var(--panel3); }
 button.primary { background: var(--accent); border-color: transparent; color: var(--accent-foreground); font-weight: 600; }
 button.ghost { background: transparent; }
+a.primary {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent); border: 1px solid transparent; color: var(--accent-foreground);
+  padding: 10px 14px; font-weight: 600; text-decoration: none;
+}
+a.primary:hover { color: var(--accent-foreground); text-decoration: none; filter: brightness(1.05); }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 14px; }
 .card {
   background: var(--panel); border: 1px solid var(--border-subtle);
   padding: 16px; display: flex; flex-direction: column; gap: 8px; cursor: pointer;
@@ -85,7 +92,6 @@ button.ghost { background: transparent; }
   border: 1px solid var(--border); background: transparent; color: var(--muted);
   padding: 2px 8px; font-family: var(--mono); font-size: .72rem;
 }
-.pill.tag { border-color: rgba(212, 165, 116, .35); color: var(--accent); }
 .pill.src { border-color: rgba(119, 170, 153, .35); color: var(--ok); }
 .empty, .error {
   border: 1px dashed var(--border); padding: 28px;
@@ -114,7 +120,7 @@ button.ghost { background: transparent; }
 pre.json {
   background: var(--bg); border: 1px solid var(--border-subtle);
   padding: 12px; overflow: auto; max-height: 360px; font-size: .78rem; margin-top: 12px;
-  font-family: var(--mono);
+  font-family: var(--mono); -webkit-overflow-scrolling: touch;
 }
 
 .panel {
@@ -123,7 +129,8 @@ pre.json {
 }
 .panel h2 { margin: 0 0 6px; font-size: 1.05rem; font-family: var(--font-display); font-weight: 600; }
 .panel p.hint { margin: 0 0 14px; color: var(--muted); font-size: .88rem; }
-.panel.api table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.panel.api { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.panel.api table { width: 100%; border-collapse: collapse; font-size: .88rem; min-width: 480px; }
 .panel.api th, .panel.api td {
   text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border-subtle); vertical-align: top;
 }
@@ -137,3 +144,66 @@ pre.json {
 @media (max-width: 800px) {
   .kv { grid-template-columns: 1fr; }
 }
+
+/* ── Mobile / small screens ─────────────────────────────────────── */
+@media (max-width: 720px) {
+  html, body { font-size: 14px; }
+
+  .wrap { padding: 16px 12px 56px; }
+
+  header.top {
+    flex-direction: column; align-items: stretch; gap: 12px;
+    padding-top: 14px;
+  }
+
+  .brand { gap: 10px; }
+  .brand h1 { font-size: 1.05rem; }
+  .brand p { font-size: .72rem; }
+  .logo, .logo svg { width: 30px; height: 30px; }
+
+  .stats { gap: 10px; font-size: .8rem; }
+
+  .warn { padding: 10px 12px; font-size: .85rem; margin-bottom: 12px; }
+
+  .toolbar { flex-direction: column; gap: 8px; }
+  .toolbar .search,
+  .toolbar select,
+  .toolbar button { flex: 1 1 auto; width: 100%; }
+
+  /* Touch targets */
+  button, a.primary, .back, input[type="search"], select {
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .grid { grid-template-columns: 1fr; gap: 12px; }
+  .card { padding: 14px; }
+  .card h3 { font-size: .95rem; }
+
+  .detail { padding: 14px; }
+  .detail h2 { font-size: 1.1rem; word-break: break-word; }
+  .detail header { flex-direction: column; align-items: stretch; }
+
+  .panel { padding: 14px; margin-top: 18px; }
+  .panel h2 { font-size: 1rem; }
+
+  .actions { flex-direction: column; }
+  .actions a.primary,
+  .actions button { width: 100%; }
+
+  pre.json { font-size: .72rem; max-height: 280px; padding: 10px; }
+
+  .empty, .error { padding: 20px 14px; }
+
+  .header-row { font-size: .78rem; }
+
+  .back { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 420px) {
+  .brand h1 { font-size: .98rem; }
+  .stats { flex-direction: column; gap: 4px; }
+  .pill { font-size: .68rem; padding: 2px 6px; }
+}
+

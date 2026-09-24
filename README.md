@@ -67,7 +67,6 @@ Maintainers may reject or remove any extension at any time.
   "tagline": "Short one-liner",
   "description": "What it changes on the gateway.",
   "author": "you",
-  "tags": ["custom"],
   "base_url": "https://api.example.com/v1",
   "headers": [],
   "ui": { "accent": "#cba6f7" }
@@ -97,7 +96,6 @@ curl -X POST http://gateway:7841/admin/api/v1/sidecar/extensions/import \
 | `description` | string | Long description |
 | `author` | string | Author / team |
 | `homepage` | string | Project URL |
-| `tags` | string[] | Search tags |
 | `type` | string | `sidecar` or `theme` |
 | `base_url` | string | Sidecar base URL on apply |
 | `user_agent` | string | Optional UA override |
@@ -158,7 +156,7 @@ Icons: whitelist only (`layout`, `box`, `layers`, `network`, `database`, `termin
 
 ## Bundled extensions
 
-### OpenCode — split into 2
+### CLI Emulation profile — split into 2
 
 | id | role |
 |----|------|
@@ -170,11 +168,11 @@ Install `opencode` for the provider type and client signature; add `opencode-oau
 ### Themes
 
 Pure-UI extensions (`type: "theme"`, tagged `theme`) — no `base_url`, headers or tools.
-Apply the extension in the dashboard to switch the theme; disable it to revert.
+The flat minimal theme is the gateway's core default; these are optional alternatives.
+Apply the extension in the dashboard to switch the theme; disable it to revert to minimal.
 
 | id | description |
 |----|-------------|
-| `theme-minimal` | Flat zero-radius minimal theme, warm sand accent |
 | `theme-catppuccin-mocha` | Catppuccin Mocha (dark) |
 | `theme-catppuccin-latte` | Catppuccin Latte (light) |
 | `theme-catppuccin-frappe` | Catppuccin Frappé |
@@ -211,7 +209,7 @@ extensions/
 
 | Path | Response |
 |------|----------|
-| `GET /api/v1/extensions.json` | `{ "extensions": [ { id, name, tagline, type, version, author, tags } ] }` |
+| `GET /api/v1/extensions.json` | `{ "extensions": [ { id, name, tagline, type, version, author } ] }` |
 | `GET /extensions/{id}.extension.json` | full extension JSON |
 
 Static hosts serve only these real file paths, which is why both this page and

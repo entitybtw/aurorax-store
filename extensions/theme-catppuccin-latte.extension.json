@@ -8,12 +8,6 @@
   "author": "aurora",
   "license": "MIT",
   "type": "theme",
-  "tags": [
-    "theme",
-    "catppuccin",
-    "light",
-    "official"
-  ],
   "requirements": [],
   "settings": {},
   "ui": {

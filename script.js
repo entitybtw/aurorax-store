@@ -39,10 +39,9 @@ async function fetchText(url) {
 let listCache = [];
 let debounceTimer;
 
-function matches(e, q, tag) {
-  if (tag && !(e.tags || []).some((t) => String(t).toLowerCase() === tag)) return false;
+function matches(e, q) {
   if (!q) return true;
-  const hay = [e.id, e.name, e.tagline, e.author, ...(e.tags || [])]
+  const hay = [e.id, e.name, e.tagline, e.author]
     .join(" ")
     .toLowerCase();
   return q.split(/\s+/).every((part) => hay.includes(part));
@@ -50,14 +49,6 @@ function matches(e, q, tag) {
 
 function loadMeta() {
   $("#stats").innerHTML = `<span><b>${listCache.length}</b> extensions</span>`;
-  const tags = new Set();
-  for (const e of listCache) for (const t of e.tags || []) tags.add(t);
-  const tagSel = $("#tag");
-  const current = tagSel.value;
-  tagSel.innerHTML =
-    `<option value="">All tags</option>` +
-    [...tags].sort().map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
-  tagSel.value = current;
 }
 
 async function loadList() {
@@ -72,8 +63,7 @@ async function loadList() {
     }
     loadMeta();
     const q = $("#q").value.trim().toLowerCase();
-    const tag = $("#tag").value;
-    const list = listCache.filter((e) => matches(e, q, tag));
+    const list = listCache.filter((e) => matches(e, q));
     if (!list.length) {
       el.innerHTML = `<div class="empty">No extensions match.</div>`;
       return;
@@ -90,7 +80,6 @@ async function loadList() {
           <div class="tagline">${escapeHtml(e.tagline || "")}</div>
           <div class="meta">
             ${pill(e.id)}
-            ${(e.tags || []).slice(0, 4).map((t) => pill(t, "pill tag")).join("")}
           </div>
           <div class="meta">
             ${e.author ? `<span>${escapeHtml(e.author)}</span>` : ""}
@@ -126,7 +115,6 @@ async function openDetail(id) {
     if (!meta) throw new Error("extension not found");
     const rawUrl = apiRaw(id);
     const full = await fetchJSON(rawUrl).catch(() => meta);
-    const tags = (full.tags || meta.tags || []).map((t) => pill(t, "pill tag")).join(" ");
     const headers = (full.headers || [])
       .map((h) => {
         const detail = [h.mode, h.prefix, h.length ? `+${h.length}` : null, h.charset, h.value]
@@ -143,7 +131,7 @@ async function openDetail(id) {
             <h2><span class="dot"></span>${escapeHtml(full.name || meta.name)}</h2>
             <div style="color:var(--muted)">${escapeHtml(full.tagline || meta.tagline || "")}</div>
           </div>
-          <div class="meta">${pill(full.id || meta.id)} ${full.version ? pill("v" + full.version) : ""} ${tags}</div>
+          <div class="meta">${pill(full.id || meta.id)} ${full.version ? pill("v" + full.version) : ""}</div>
         </header>
         <div class="desc">${escapeHtml(full.description || "")}</div>
         <dl class="kv">
@@ -160,8 +148,7 @@ async function openDetail(id) {
           </div>` : ""}
         ${headers ? `<div class="headers">${headers}</div>` : ""}
         <div class="actions">
-          <a class="primary" style="display:inline-block;text-decoration:none;padding:10px 14px;border-radius:var(--radius)"
-             href="${escapeHtml(rawUrl)}" download>Download JSON</a>
+          <a class="primary" href="${escapeHtml(rawUrl)}" download>Download JSON</a>
           <button id="copy-url" type="button">Copy raw URL</button>
         </div>
         <pre class="json" id="raw-json"></pre>
@@ -192,7 +179,6 @@ $("#q").addEventListener("input", () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(loadList, 200);
 });
-$("#tag").addEventListener("change", loadList);
 $("#refresh").addEventListener("click", () => {
   listCache = [];
   loadList();
