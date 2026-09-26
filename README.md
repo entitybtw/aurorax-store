@@ -36,6 +36,13 @@ keeps your saved settings, applied state and position.
 
 ## Safety — read before installing
 
+> **Disclaimer:** Everything here is shared for **informational and
+> educational purposes**. Extensions can route your traffic to, and interact
+> with, **third-party services in ways that may conflict with those services'
+> terms of service**. Review the JSON and the target service's rules before
+> use; you are responsible for any consequences, including suspensions or
+> bans.
+
 Everything in this store is **community-added; there is no review guarantee**.
 
 - Extensions can **change gateway behavior**: headers, tools, auth defaults,
