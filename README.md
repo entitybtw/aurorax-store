@@ -1,63 +1,84 @@
 # AuroraX Store
 
-**Gateway community extension repo** for Aurora.
+Static extension catalog for the [AuroraX gateway](https://github.com/entitybtw/aurora).
+Drop extension JSON files into `extensions/` — the page and API expose **info +
+raw content** only. Gateway-side repo URLs are managed in
+**Settings → Extensions**.
 
-This is a **plain static repo**: throw extension JSON files into `extensions/`.
-The page and API only expose **info + raw content** — no multi-repo UI here.
-Repo base URLs are managed in **Aurora → Settings → Extensions**.
-
----
-
-## ⚠️ Community extensions — be careful
-
-Everything listed here is **added by the community**. There is **no review guarantee**.
-
-- Extensions can **change gateway behavior**: headers, tools, OAuth, base URLs.
-- They can point at **external URLs** you do not control.
-- Bad or malicious JSON can break auth, leak secrets, or proxy traffic incorrectly.
-- **Read the JSON** before importing. Prefer self-hosted repos you trust.
-- You are responsible for what you install.
-
-Use at your own risk. Official Aurora components do **not** go through this store.
+| What | Where |
+|------|-------|
+| Gateway source code | [github.com/entitybtw/aurora](https://github.com/entitybtw/aurora) |
+| Store (live catalog) | [entitybtw.github.io/aurorax-store](https://entitybtw.github.io/aurorax-store) |
+| Store source code | [github.com/entitybtw/aurorax-store](https://github.com/entitybtw/aurorax-store) |
+| Docker image | [hub.docker.com/r/entbtw/aurora](https://hub.docker.com/r/entbtw/aurora) |
 
 ---
 
-## Rules
+## Install an extension
 
-1. **No malware / credential theft** — no exfiltration of keys, tokens, or user data.
-2. **No remote code** outside what the extension JSON declares (headers/tools/files).
+1. In the gateway open **Settings → Extensions → Browse store** (this repo's
+   URL is added as a store base, or import one extension by URL):
+
+   ```bash
+   curl -X POST http://gateway:7841/admin/api/v1/sidecar/extensions/import \
+     -H 'Content-Type: application/json' \
+     -d '{"url":"https://entitybtw.github.io/aurorax-store/extensions/my-ext.extension.json"}'
+   ```
+
+2. Review the imported JSON in the dashboard, then click **Enable** / **Apply**.
+3. Settings changes made after install are yours — **Reset to defaults**
+   restores the shipped values (only while a sync source is configured).
+
+Extensions update in place: **Update from source** re-fetches the JSON and
+keeps your saved settings, applied state and position.
+
+---
+
+## Safety — read before installing
+
+Everything in this store is **community-added; there is no review guarantee**.
+
+- Extensions can **change gateway behavior**: headers, tools, auth defaults,
+  base URLs, tool injection.
+- They can point traffic at **external URLs** you do not control.
+- Broken or hostile JSON can leak secrets or proxy traffic incorrectly.
+- **Read the JSON before importing.** Prefer repos you host yourself.
+- You are responsible for what you install. Official gateway components do
+  not come from this store.
+
+## Rules for submissions
+
+1. **No malware / credential theft** — no exfiltration of keys or user data.
+2. **No remote code** beyond what the JSON declares (headers / tools / files).
 3. **Honest metadata** — real `name`, `tagline`, `author`, `homepage`.
-4. **No trademark abuse** — do not impersonate Aurora or third parties.
-5. **No spam** — one quality extension beats ten clones.
-6. **Breaking change = new file or bump** — keep old JSON importable when possible.
-7. **You own your PR** — respond to review comments or the PR goes stale.
+4. **No trademark abuse** — do not impersonate the gateway or third parties.
+5. **No spam** — one useful extension beats ten clones.
+6. **Breaking change = new file or version bump** — keep old JSON importable.
+7. **You own your PR** — answer review comments or it goes stale.
 
 Maintainers may reject or remove any extension at any time.
 
 ---
 
-## Submit a PR (add an extension)
+## Add an extension (PR)
 
-1. Fork this repository (or open a PR against the community fork).
-2. Add one file:
+1. Fork the repository and add exactly one file:
 
    ```
    extensions/{id}.extension.json
    ```
 
-3. `{id}` must match the `id` field: lowercase, `a-z0-9-`, no spaces.
-4. Validate JSON locally:
+2. `{id}` must match the JSON `id` field: lowercase `a-z0-9-`, no spaces.
+3. Validate locally:
 
    ```bash
    python3 -m json.tool extensions/my-ext.extension.json > /dev/null
    ```
 
-5. Open a PR with:
-   - What the extension does
-   - Base URL / auth notes
-   - Why the community needs it
+4. Open a PR describing: what it does, base URL / auth notes, and why the
+   community needs it.
 
-### Minimal example
+Minimal example:
 
 ```json
 {
@@ -75,28 +96,22 @@ Maintainers may reject or remove any extension at any time.
 
 ---
 
-## Extension JSON (for authors)
+## Extension JSON reference (for authors)
 
-Imported by Aurora as **Sidecar → Extensions → Import** or:
-
-```bash
-curl -X POST http://gateway:7841/admin/api/v1/sidecar/extensions/import \
-  -H 'Content-Type: application/json' \
-  -d '{"url":"http://store/extensions/my-ext.extension.json"}'
-```
+Imported by the gateway via **Settings → Extensions → Import** (URL above).
 
 ### Three layers
 
-Aurora extensions fall into three composable layers (an extension may mix them):
+An extension may mix all three:
 
 | Layer | Typical `type` | Role |
 |-------|----------------|------|
 | **Theme** | `theme` | Dashboard palette via `ui.theme` / `ui.theme_light` / `ui.theme_dark` |
-| **Preset** | `sidecar` | Sidecar routing, headers, tools, retries, OAuth endpoints |
-| **Addon** | `sidecar` / future `addon` | Optional capabilities via `provides` (`provider_types`, `features`) and `files` |
+| **Preset** | `sidecar` | Sidecar routing, headers, tools, retries, auth endpoints |
+| **Addon** | `sidecar` / `addon` | Optional capabilities via `provides` (`provider_types`, `features`) and `files` |
 
-Gateway deep-dives live in the Aurora repo:  
-`documentation/extensions/{README,THEMES,PRESETS,ADDONS}.md`.
+Gateway-side deep dives: `documentation/extensions/{README,THEMES,PRESETS,ADDONS}.md`
+in the gateway repo.
 
 ### Top-level fields
 
@@ -115,25 +130,26 @@ Gateway deep-dives live in the Aurora repo:
 | `default_auth` | string | Default `Authorization` scheme |
 | `headers` | object[] | Header rules for Session Hub |
 | `tool_schemas` | object[] | Tools to inject upstream |
-| `settings` | object | Sidecar knobs (`base_url`, `oauth_server`, …) |
-| `oauth` | object | Device-flow OAuth (`server`, `client_id`, `verification_base`) |
+| `settings` | object | Sidecar knobs (`base_url`, `forward_headers`, `sidecar_url`, …) |
+| `oauth` | object | Auth-flow wiring (`server`, `client_id`, `verification_base`) |
 | `files` | object | Files materialized on apply (path → content) |
 | `provides` | object | `{ provider_types, features }` |
 | `ui` | object | Dashboard presentation (see below) |
 | `requirements` | string[] | Human-readable install requirements |
 | `builtin` | bool | Always `false` in this store |
 
-### Header rule (`headers[]`)
+### Header rules (`headers[]`)
 
 ```json
-{ "name": "x-session", "mode": "generate", "prefix": "s_", "length": 24, "charset": "hex" }
+{ "name": "x-session", "mode": "map_or_generate", "prefix": "ses_", "length": 26, "charset": "hex" }
 ```
 
-Modes: `generate` | `map_or_generate` | `value` | (gateway-specific).
+Modes: `map_or_generate` (default), `map`, `generate`, `passthrough`, `static`,
+`random_from_list`, `remove`.
 
-### UI contributions (`ui`) — full dashboard surface
+### UI contributions (`ui`)
 
-Applied only after the operator clicks **Apply** on the extension.
+Applied only after the operator clicks **Apply**.
 
 | Field | Description |
 |-------|-------------|
@@ -149,7 +165,8 @@ Applied only after the operator clicks **Apply** on the extension.
 | `settings_tabs[]` | Extra Settings tabs with `blocks[]` |
 | `hide_settings_tabs[]` | Hide built-in settings tab ids |
 
-**Page blocks** (`blocks[]` / `settings_tabs[].blocks`): structured only — no raw HTML/JS.
+**Page blocks** (`blocks[]` / `settings_tabs[].blocks`) are structured only —
+no raw HTML/JS:
 
 ```json
 { "kind": "heading", "text": "Getting started" }
@@ -161,35 +178,38 @@ Applied only after the operator clicks **Apply** on the extension.
 { "kind": "divider" }
 ```
 
-Nav `to`: path under `/admin/dashboard` (relative slug becomes `/admin/dashboard/ext/…`), or absolute `https://…`.
-
-Icons: whitelist only (`layout`, `box`, `layers`, `network`, `database`, `terminal`, `settings`, `shield`, `key`, `workflow`, `book`, `puzzle`, `plugin`, `message`, …).
+Nav `to`: a path under `/admin/dashboard` (a relative slug becomes
+`/admin/dashboard/ext/…`) or an absolute `https://…`.
+Icons are whitelisted: `layout`, `box`, `layers`, `network`, `database`,
+`terminal`, `settings`, `shield`, `key`, `workflow`, `book`, `puzzle`,
+`plugin`, `message`, …
 
 ---
 
 ## Bundled extensions
 
-### OpenCode Emulation profile — split into 2
+### Emulation profile — split into 2
 
 | id | role |
 |----|------|
-| `opencode` | **OpenCode Emulation** — adds the `cli-emulation` provider type (`provides.provider_types`), client headers, tools injected for `cli-emulation` and `vllm` providers, sidecar_url/forward_headers settings and files (the CLI profile) |
-| `opencode-oauth` | **Device-flow OAuth only** (`provides.features: ["oauth"]`, no provider type, no tools) |
+| `opencode` | **OpenCode Emulation** — adds the `cli-emulation` provider type, client headers, tools injected for `cli-emulation` and `vllm` providers, `sidecar_url` / `forward_headers` settings and files |
+| `opencode-oauth` | **Device-flow auth only** (`provides.features: ["oauth"]`, no provider type, no tools) |
 
-Install `opencode` for the provider type and client signature; add `opencode-oauth` to wire device-flow auth. Pools whose members report type `vllm` still receive the tool injection and streaming via `inject_tool_types`.
+Install `opencode` for the provider type and client signature; add
+`opencode-oauth` to wire device-flow auth. Pools whose members report type
+`vllm` still receive tool injection and streaming via `inject_tool_types`.
 
-### OAuth 2.0 authorization-code
+### Authorization-code auth
 
 | id | role |
 |----|------|
-| `claude-oauth` | **Claude OAuth** — Claude OAuth 2.0 authorization-code + PKCE wiring (`authorize_url`, `token_url`, `client_id`, `scopes`). Supplies the `oauth` feature only; pair it with a provider-type extension. |
-
+| `claude-oauth` | **Claude OAuth 2.0** — authorization-code + PKCE wiring (`authorize_url`, `token_url`, `client_id`, `scopes`) with a shipped settings page. Supplies the `oauth` feature only; pair it with a provider-type extension. |
 
 ### Themes
 
-Pure-UI extensions (`type: "theme"`, tagged `theme`) — no `base_url`, headers or tools.
-The flat minimal theme is the gateway's core default; these are optional alternatives.
-Apply the extension in the dashboard to switch the theme; disable it to revert to minimal.
+Pure-UI extensions (`type: "theme"`) — no `base_url`, headers or tools. The
+flat minimal theme is the gateway default; these are optional alternatives.
+Apply to switch, disable to revert.
 
 | id | description |
 |----|-------------|
@@ -197,44 +217,37 @@ Apply the extension in the dashboard to switch the theme; disable it to revert t
 | `theme-catppuccin-frappe` | Frappé flavor — dark + light variants |
 | `theme-catppuccin-macchiato` | Macchiato flavor — dark + light variants |
 
-Every theme ships both `theme_dark` and `theme_light`, so the dashboard
-light/dark switch picks the matching palette from the same installed theme —
-no separate light theme to install. Theme extensions expose editable color
-fields (accent, background, surface, text, border, radius) under `ui.fields`.
+Every theme ships both `theme_dark` and `theme_light`, so the light/dark
+switch picks the matching palette from the same installed theme. Editable color
+fields (accent, background, surface, text, border, radius) live under
+`ui.fields`.
 
 ---
 
-## Hosting
+## Hosting & API
 
-Plain static files served by **GitHub Pages** from this repository root.
-No server config needed. Add the store base URL in Aurora under
-**Settings → Extensions** (the gateway fetches `{base}/api/v1/extensions.json`).
-
----
-
-## Layout
-
-```
-index.html          # human catalog (aggregates every repo below)
-style.css
-script.js
-README.md
-api/v1/extensions.json   # served as GET /api/v1/extensions.json
-extensions/
-  {id}.extension.json      # sidecar extensions (opencode, opencode-oauth, …)
-  theme-*.extension.json   # theme extensions (pure UI)
-  …
-```
-
-## API (what Aurora parses)
+Plain static files served by **GitHub Pages** from this repository root — no
+server config. Add the store base URL in the gateway under
+**Settings → Extensions**.
 
 | Path | Response |
 |------|----------|
 | `GET /api/v1/extensions.json` | `{ "extensions": [ { id, name, tagline, type, version, author } ] }` |
 | `GET /extensions/{id}.extension.json` | full extension JSON |
 
-Static hosts serve only these real file paths, which is why both this page and
-Aurora fetch them directly. Aurora additionally fills in a `raw_url` per entry
-when browsing a store.
+Both paths are the real files below — the catalog page and the gateway fetch
+them directly. The gateway additionally fills a `raw_url` per entry when
+browsing. No other endpoints exist.
 
-No other endpoints.
+## Layout
+
+```
+index.html                 # human catalog (aggregates every repo below)
+style.css
+script.js
+README.md
+api/v1/extensions.json     # GET /api/v1/extensions.json
+extensions/
+  {id}.extension.json        # emulation / auth extensions
+  theme-*.extension.json     # theme extensions (pure UI)
+```
