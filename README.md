@@ -173,10 +173,10 @@ Icons: whitelist only (`layout`, `box`, `layers`, `network`, `database`, `termin
 
 | id | role |
 |----|------|
-| `opencode` | **OpenCode Emulation** — adds the whole `opencode` provider type (`provides.provider_types` + `inject_tool_types`), client headers, tools and files (the CLI profile) |
+| `opencode` | **OpenCode Emulation** — adds the `cli-emulation` provider type (`provides.provider_types`), client headers, tools injected for `cli-emulation` and `vllm` providers, sidecar_url/forward_headers settings and files (the CLI profile) |
 | `opencode-oauth` | **Device-flow OAuth only** (`provides.features: ["oauth"]`, no provider type, no tools) |
 
-Install `opencode` for the provider type and client signature; add `opencode-oauth` to wire device-flow auth.
+Install `opencode` for the provider type and client signature; add `opencode-oauth` to wire device-flow auth. Pools whose members report type `vllm` still receive the tool injection and streaming via `inject_tool_types`.
 
 ### OAuth 2.0 authorization-code
 
@@ -193,9 +193,9 @@ Apply the extension in the dashboard to switch the theme; disable it to revert t
 
 | id | description |
 |----|-------------|
-| `theme-catppuccin-mocha` | Catppuccin Mocha — dark + light variants |
-| `theme-catppuccin-frappe` | Catppuccin Frappé — dark + light variants |
-| `theme-catppuccin-macchiato` | Catppuccin Macchiato — dark + light variants |
+| `theme-catppuccin-mocha` | Mocha flavor — dark + light variants |
+| `theme-catppuccin-frappe` | Frappé flavor — dark + light variants |
+| `theme-catppuccin-macchiato` | Macchiato flavor — dark + light variants |
 
 Every theme ships both `theme_dark` and `theme_light`, so the dashboard
 light/dark switch picks the matching palette from the same installed theme —
