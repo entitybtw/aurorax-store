@@ -1,10 +1,10 @@
 {
   "schema": 1,
   "id": "claude-oauth",
-  "name": "Authorization-code OAuth",
-  "tagline": "OAuth 2.0 authorization-code + PKCE for the optional provider type",
-  "description": "Wires OAuth 2.0 authorization-code + PKCE (authorize_url, token_url, client_id, scopes) for the optional provider type. Provides the oauth feature only. Install the matching provider-type extension alongside it for headers, tools and client signature. Endpoints and scopes are supplied by this JSON — the gateway does not hardcode them.",
-  "version": "1",
+  "name": "Claude OAuth",
+  "tagline": "Claude OAuth 2.0 — authorization-code + PKCE for Claude providers",
+  "description": "Wires Claude OAuth 2.0 authorization-code + PKCE (authorize_url, token_url, client_id, Claude scopes) for the Claude provider type. Provides the oauth feature only. Install the matching provider-type extension alongside it for headers, tools and client signature. Endpoints and scopes are supplied by this JSON — the gateway does not hardcode them.",
+  "version": "2",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
@@ -42,6 +42,9 @@
   "ui": {
     "accent": "#D97757",
     "docs_url": "",
-    "help": "OAuth 2.0 authorization-code + PKCE for the optional provider type. Endpoints come from this extension — no hardcoded core origins."
+    "help": "Claude OAuth 2.0 — authorization-code + PKCE for Claude providers. Endpoints come from this extension — no hardcoded core origins."
+  },
+  "files": {
+    "auth-claude.go": "// addon-kind: auth\npackage main\n\n// UI contributes the Claude OAuth 2.0 authorization-code + PKCE login page\n// to the dashboard Settings. Shipped inside the claude-oauth extension\n// (files.auth-claude.go), so it exists only while that extension is applied.\nfunc UI() string {\n\treturn `{\"settings_tabs\":[{\"id\":\"oauth-authcode\",\"label\":\"Claude OAuth 2.0\",\"icon\":\"key\",\"order\":11,\"blocks\":[{\"kind\":\"heading\",\"text\":\"Claude OAuth 2.0 — authorization code + PKCE\"},{\"kind\":\"text\",\"text\":\"This flow is installed by the Claude OAuth 2.0 extension. Endpoints and scopes are declared in the extension JSON; nothing is hardcoded in the gateway core.\"},{\"kind\":\"list\",\"items\":[\"Open Providers, pick a Claude provider with auth method oauth\",\"Choose Connect — your browser opens the authorize URL\",\"Approve; the browser redirects to the loopback callback\",\"Paste the callback URL (code + state) back into the dialog\"]},{\"kind\":\"kv\",\"kv\":[{\"k\":\"Authorize URL\",\"v\":\"https://claude.com/cai/oauth/authorize\"},{\"k\":\"Token URL\",\"v\":\"https://platform.claude.com/v1/oauth/token\"},{\"k\":\"Redirect URI\",\"v\":\"http://127.0.0.1:54545/callback\"},{\"k\":\"PKCE\",\"v\":\"S256\"}]}]}]}`\n}\n"
   }
 }

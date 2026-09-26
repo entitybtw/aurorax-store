@@ -34,5 +34,8 @@
     "accent": "#E87040",
     "docs_url": "",
     "help": "Wires device-flow OAuth for the optional provider type. No headers or tools — combine with the opencode CLI extension."
+  },
+  "files": {
+    "auth-opencode.go": "// addon-kind: auth\npackage main\n\n// UI contributes the device-flow OAuth login surface to the dashboard\n// Settings. Shipped inside the oauth extension (files.auth-opencode.go), so\n// the flow exists only while that extension is applied.\nfunc UI() string {\n\treturn `{\"settings_tabs\":[{\"id\":\"oauth-device\",\"label\":\"CLI OAuth Login\",\"icon\":\"key\",\"order\":10,\"blocks\":[{\"kind\":\"heading\",\"text\":\"Device-flow OAuth (extension-provided)\"},{\"kind\":\"text\",\"text\":\"This flow is installed by the CLI OAuth extension — the gateway core ships no provider endpoints. Start a device code, open the verification URL in a browser, then paste the code back on the Providers page.\"},{\"kind\":\"list\",\"items\":[\"Open Providers, pick a provider with auth method oauth\",\"Choose Connect — the gateway starts a device code request\",\"Open the verification URL shown there and approve\",\"The stored token then feeds upstream requests automatically\"]},{\"kind\":\"kv\",\"kv\":[{\"k\":\"Authorization server\",\"v\":\"https://opencode.ai/console\"},{\"k\":\"Client ID\",\"v\":\"opencode-cli\"},{\"k\":\"Verification base\",\"v\":\"https://opencode.ai\"},{\"k\":\"Grant\",\"v\":\"urn:ietf:params:oauth:grant-type:device_code\"}]}]}]}`\n}\n"
   }
 }

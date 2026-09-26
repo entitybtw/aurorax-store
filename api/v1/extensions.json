@@ -2,10 +2,10 @@
   "extensions": [
     {
       "id": "opencode",
-      "name": "CLI Emulation",
-      "tagline": "CLI emulation profile — provider type, headers, tools",
+      "name": "OpenCode Emulation",
+      "tagline": "OpenCode emulation profile — provider type, headers, tools",
       "type": "sidecar",
-      "version": "1",
+      "version": "2",
       "author": "aurora"
     },
     {
@@ -18,42 +18,34 @@
     },
     {
       "id": "claude-oauth",
-      "name": "Authorization-code OAuth",
-      "tagline": "OAuth 2.0 authorization-code + PKCE for the optional provider type",
+      "name": "Claude OAuth",
+      "tagline": "Claude OAuth 2.0 — authorization-code + PKCE for Claude providers",
       "type": "sidecar",
-      "version": "1",
-      "author": "aurora"
-    },
-    {
-      "id": "theme-catppuccin-mocha",
-      "name": "Catppuccin Mocha",
-      "tagline": "Catppuccin Mocha dashboard theme",
-      "type": "theme",
-      "version": "1",
-      "author": "aurora"
-    },
-    {
-      "id": "theme-catppuccin-latte",
-      "name": "Catppuccin Latte",
-      "tagline": "Catppuccin Latte (light) dashboard theme",
-      "type": "theme",
-      "version": "1",
+      "version": "2",
       "author": "aurora"
     },
     {
       "id": "theme-catppuccin-frappe",
       "name": "Catppuccin Frappé",
-      "tagline": "Catppuccin Frappé dashboard theme",
+      "tagline": "Catppuccin Frappé dashboard theme (dark + light variants)",
       "type": "theme",
-      "version": "1",
+      "version": "3",
       "author": "aurora"
     },
     {
       "id": "theme-catppuccin-macchiato",
       "name": "Catppuccin Macchiato",
-      "tagline": "Catppuccin Macchiato dashboard theme",
+      "tagline": "Catppuccin Macchiato dashboard theme (dark + light variants)",
       "type": "theme",
-      "version": "1",
+      "version": "3",
+      "author": "aurora"
+    },
+    {
+      "id": "theme-catppuccin-mocha",
+      "name": "Catppuccin Mocha",
+      "tagline": "Catppuccin Mocha dashboard theme (dark + light variants)",
+      "type": "theme",
+      "version": "3",
       "author": "aurora"
     }
   ]

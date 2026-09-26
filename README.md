@@ -169,14 +169,21 @@ Icons: whitelist only (`layout`, `box`, `layers`, `network`, `database`, `termin
 
 ## Bundled extensions
 
-### CLI Emulation profile — split into 2
+### OpenCode Emulation profile — split into 2
 
 | id | role |
 |----|------|
-| `opencode` | **CLI emulation** — adds the whole `opencode` provider type (`provides.provider_types` + `inject_tool_types`), client headers, tools and files (the CLI profile) |
+| `opencode` | **OpenCode Emulation** — adds the whole `opencode` provider type (`provides.provider_types` + `inject_tool_types`), client headers, tools and files (the CLI profile) |
 | `opencode-oauth` | **Device-flow OAuth only** (`provides.features: ["oauth"]`, no provider type, no tools) |
 
 Install `opencode` for the provider type and client signature; add `opencode-oauth` to wire device-flow auth.
+
+### OAuth 2.0 authorization-code
+
+| id | role |
+|----|------|
+| `claude-oauth` | **Claude OAuth** — Claude OAuth 2.0 authorization-code + PKCE wiring (`authorize_url`, `token_url`, `client_id`, `scopes`). Supplies the `oauth` feature only; pair it with a provider-type extension. |
+
 
 ### Themes
 
@@ -186,13 +193,14 @@ Apply the extension in the dashboard to switch the theme; disable it to revert t
 
 | id | description |
 |----|-------------|
-| `theme-catppuccin-mocha` | Catppuccin Mocha (dark) |
-| `theme-catppuccin-latte` | Catppuccin Latte (light) |
-| `theme-catppuccin-frappe` | Catppuccin Frappé |
-| `theme-catppuccin-macchiato` | Catppuccin Macchiato |
+| `theme-catppuccin-mocha` | Catppuccin Mocha — dark + light variants |
+| `theme-catppuccin-frappe` | Catppuccin Frappé — dark + light variants |
+| `theme-catppuccin-macchiato` | Catppuccin Macchiato — dark + light variants |
 
-Theme extensions expose editable color fields (accent, background, surface, text,
-border, radius) under `ui.fields`.
+Every theme ships both `theme_dark` and `theme_light`, so the dashboard
+light/dark switch picks the matching palette from the same installed theme —
+no separate light theme to install. Theme extensions expose editable color
+fields (accent, background, surface, text, border, radius) under `ui.fields`.
 
 ---
 
