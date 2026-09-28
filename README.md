@@ -82,6 +82,14 @@ Maintainers may reject or remove any extension at any time.
    python3 -m json.tool extensions/my-ext.extension.json > /dev/null
    ```
 
+   For embedded source files prefer the array-of-lines `files` form (one
+   source line per JSON string) instead of a single escaped string — it stays
+   reviewable in diffs:
+
+   ```json
+   "files": { "auth-example.go": ["// addon-kind: auth", "package main", ""] }
+   ```
+
 4. Open a PR describing: what it does, base URL / auth notes, and why the
    community needs it.
 
@@ -139,7 +147,7 @@ in the gateway repo.
 | `tool_schemas` | object[] | Tools to inject upstream |
 | `settings` | object | Sidecar knobs (`base_url`, `forward_headers`, `sidecar_url`, …) |
 | `oauth` | object | Auth-flow wiring (`server`, `client_id`, `verification_base`) |
-| `files` | object | Files materialized on apply (path → content) |
+| `files` | object | Files materialized on apply (path → content; content is a string **or an array of lines** joined with `\n` — use the array form for embedded scripts so each line stays on its own line) |
 | `provides` | object | `{ provider_types, features }` |
 | `ui` | object | Dashboard presentation (see below) |
 | `requirements` | string[] | Human-readable install requirements |
