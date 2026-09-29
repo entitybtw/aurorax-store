@@ -13,7 +13,7 @@
       "name": "OpenCode OAuth",
       "tagline": "OAuth device-flow for the optional provider type",
       "type": "sidecar",
-      "version": "3",
+      "version": "4",
       "author": "aurora"
     },
     {
@@ -21,7 +21,7 @@
       "name": "Claude OAuth",
       "tagline": "Claude OAuth 2.0 — authorization-code + PKCE for Claude providers",
       "type": "sidecar",
-      "version": "4",
+      "version": "5",
       "author": "aurora"
     },
     {

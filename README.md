@@ -69,10 +69,12 @@ Maintainers may reject or remove any extension at any time.
 
 ## Add an extension (PR)
 
-1. Fork the repository and add exactly one file:
+1. Fork the repository and add the manifest (plus optional companion files
+   it references):
 
    ```
    extensions/{id}.extension.json
+   extensions/{id}/*.go          # optional companion sources (referenced by ref)
    ```
 
 2. `{id}` must match the JSON `id` field: lowercase `a-z0-9-`, no spaces.
@@ -82,9 +84,18 @@ Maintainers may reject or remove any extension at any time.
    python3 -m json.tool extensions/my-ext.extension.json > /dev/null
    ```
 
-   For embedded source files prefer the array-of-lines `files` form (one
-   source line per JSON string) instead of a single escaped string — it stays
-   reviewable in diffs:
+   For source files prefer a `ref` to a companion file kept next to the
+   manifest (one real file per source, reviewable and editable on its own)
+   instead of embedding the whole script into the JSON:
+
+   ```json
+   "files": { "auth-example.go": { "ref": "{id}/auth-example.go" } }
+   ```
+
+   The ref resolves relative to the manifest URL, so
+   `extensions/{id}/auth-example.go` is fetched automatically at import.
+   Inline content still works: a plain string, or an array of lines (one
+   source line per JSON string) for readable diffs:
 
    ```json
    "files": { "auth-example.go": ["// addon-kind: auth", "package main", ""] }
@@ -147,7 +158,7 @@ in the gateway repo.
 | `tool_schemas` | object[] | Tools to inject upstream |
 | `settings` | object | Sidecar knobs (`base_url`, `forward_headers`, `sidecar_url`, …) |
 | `oauth` | object | Auth-flow wiring (`server`, `client_id`, `verification_base`) |
-| `files` | object | Files materialized on apply (path → content; content is a string **or an array of lines** joined with `\n` — use the array form for embedded scripts so each line stays on its own line) |
+| `files` | object | Files materialized on apply: `{"ref": "…"}` pointing at a companion file next to the manifest, an inline string, or an array of lines joined with `\n` |
 | `provides` | object | `{ provider_types, features }` |
 | `ui` | object | Dashboard presentation (see below) |
 | `requirements` | string[] | Human-readable install requirements |
