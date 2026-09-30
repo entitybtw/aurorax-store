@@ -5,9 +5,9 @@ package main
 //
 // Reads subscriptions you list, parses them, probes every endpoint, keeps the
 // best ones (count, latency threshold, sort order) and drops the ones that
-// stopped answering. Local source addresses configured on the provider stay
-// the preferred exit; the endpoints below become the fallback tier and are
-// only reached once the preferred tier is rate-limited or unreachable.
+// stopped answering. Where the endpoints sit relative to the source addresses
+// configured on the provider is up to egress_mode: rotate them together (the
+// default), keep them as the fallback tier, or prefer them exclusively.
 //
 // Everything here runs on the gateway's stdlib only — no external packages.
 // Network work happens on a background goroutine so a pick never blocks a
@@ -255,6 +255,7 @@ func EgressCandidates(raw string) string {
 		return `{"candidates":[]}`
 	}
 
+	tier := egressTier(p)
 	var b strings.Builder
 	b.WriteString(`{"candidates":[`)
 	for i, port := range ports {
@@ -266,10 +267,35 @@ func EgressCandidates(raw string) string {
 		b.WriteString(quote("vpn:" + node))
 		b.WriteString(`,"proxy":`)
 		b.WriteString(quote("socks5://127.0.0.1:" + strings.TrimSpace(port)))
+		b.WriteString(`,"tier":`)
+		b.WriteString(strconv.Itoa(tier))
 		b.WriteString(`}`)
 	}
 	b.WriteString(`]}`)
 	return b.String()
+}
+
+// egressTier maps this extension's egress_mode onto the gateway's exit tiers:
+//
+//	rotate    (default) — tier 0: these endpoints and the provider's own
+//	                      source addresses form one rotation and are picked
+//	                      from together.
+//	fallback  — tier 1: the endpoints take over once the provider's own
+//	                      source addresses fail or get rate-limited.
+//	vpn_only  — tier -1: the endpoints are preferred and the provider's own
+//	                      source addresses are the last resort.
+//
+// An unrecognised value behaves like the default so a typo never silently
+// disables the exits.
+func egressTier(p payload) int {
+	switch strings.TrimSpace(val(p, "egress_mode", "rotate")) {
+	case "fallback":
+		return 1
+	case "vpn_only":
+		return -1
+	default:
+		return 0
+	}
 }
 
 // maybeStartRefresh kicks off a background refresh when one is due. The pick
@@ -364,8 +390,14 @@ func trimErrors(in []string) []string {
 }
 
 // collect fetches every configured subscription and parses the URIs.
+//
+// An entry does not have to be a URL: a node URI pasted straight into the
+// list (vless://, vmess://, ss://, trojan://) is parsed as-is, and a bare
+// token is joined with subscription_base_url when that is set. Anything else
+// is reported as an error rather than skipped in silence.
 func collect(p payload) ([]Endpoint, []string, int, int) {
-	urls := splitList(val(p, "subscriptions", ""))
+	entries := splitList(val(p, "subscriptions", ""))
+	base := strings.TrimSpace(val(p, "subscription_base_url", ""))
 	var errs []string
 	var out []Endpoint
 	fetched := 0
@@ -383,10 +415,24 @@ func collect(p payload) ([]Endpoint, []string, int, int) {
 		}
 	}
 
-	for _, sub := range urls {
-		body, err := fetchSubscription(sub, headers)
+	for _, entry := range entries {
+		target := entry
+		if !isSubscriptionURL(target) {
+			if ep, ok := parseURI(target); ok {
+				out = append(out, ep)
+				fetched++
+				continue
+			}
+			resolved, ok := joinSubscriptionBase(target, base)
+			if !ok {
+				errs = append(errs, entry+": not an http(s) subscription URL or a supported node URI")
+				continue
+			}
+			target = resolved
+		}
+		body, err := fetchSubscription(target, headers)
 		if err != nil {
-			errs = append(errs, sub+": "+err.Error())
+			errs = append(errs, target+": "+err.Error())
 			continue
 		}
 		fetched++
@@ -398,7 +444,23 @@ func collect(p payload) ([]Endpoint, []string, int, int) {
 			out = append(out, ep)
 		}
 	}
-	return out, errs, len(urls), fetched
+	return out, errs, len(entries), fetched
+}
+
+// isSubscriptionURL reports whether the entry is fetched over http(s).
+func isSubscriptionURL(entry string) bool {
+	l := strings.ToLower(strings.TrimSpace(entry))
+	return strings.HasPrefix(l, "http://") || strings.HasPrefix(l, "https://")
+}
+
+// joinSubscriptionBase combines a bare token with the configured base URL.
+// base is expected to point at the collection endpoint, so the token becomes
+// the last path segment: https://host/sub/ + abc123.
+func joinSubscriptionBase(entry, base string) (string, bool) {
+	if base == "" || strings.TrimSpace(entry) == "" {
+		return "", false
+	}
+	return strings.TrimRight(base, "/") + "/" + strings.TrimLeft(entry, "/"), true
 }
 
 func fetchSubscription(rawURL string, headers map[string]string) (string, error) {
@@ -882,6 +944,7 @@ func Data(raw string) string {
 		{"k": "Last refresh", "v": refreshed},
 		{"k": "Core switch", "v": orDash(snapshot.CoreSwitch)},
 		{"k": "Applies to", "v": orDash(val(p, "apply_to", "*"))},
+		{"k": "Rotation", "v": orDash(val(p, "egress_mode", "rotate"))},
 		{"k": "Order", "v": orDash(val(p, "node_order", "best_first"))},
 		{"k": "Keep", "v": orDash(val(p, "node_count", "3"))},
 	}

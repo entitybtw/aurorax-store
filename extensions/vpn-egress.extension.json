@@ -2,8 +2,8 @@
   "schema": 1,
   "id": "vpn-egress",
   "name": "VPN Egress",
-  "tagline": "Subscription endpoints as a fallback exit for listed providers",
-  "description": "Adds a fallback egress tier built from subscription endpoints: the gateway fetches the subscriptions you list, parses them, probes each endpoint, keeps the best ones and drops the ones that stopped answering. Local source addresses stay the preferred exit and are used while they work; the endpoints take over when the preferred tier is rate-limited or unreachable. Selection scope, count, quality threshold and refresh interval are all configurable per provider list. This extension ships only its own runtime and UI addons — no gateway code is required for it to work.",
+  "tagline": "VPN subscription endpoints in your provider\u2019s exit rotation",
+  "description": "Adds subscription endpoints to the exit set of the providers you list: the gateway fetches each subscription, parses it, probes every endpoint, keeps the best ones and drops the ones that stopped answering. Where those endpoints sit is up to you — rotated together with the provider\u2019s own source addresses (default), held back as the fallback tier, or preferred on their own. Selection scope, count, quality threshold and refresh interval are all configurable per provider list. This extension ships only its own runtime and UI addons — no gateway code is required for it to work.",
   "version": "1",
   "author": "aurora",
   "homepage": "",
@@ -14,6 +14,7 @@
   },
   "settings": {
     "apply_to": "*",
+    "egress_mode": "rotate",
     "refresh_interval_minutes": "30",
     "node_count": "3",
     "node_order": "best_first",
@@ -29,7 +30,7 @@
   "ui": {
     "accent": "#7dcfff",
     "docs_url": "",
-    "help": "List the providers or pools this applies to as a comma-separated list (* for every provider). Local source addresses are preferred; these endpoints are the fallback tier.",
+    "help": "List the providers or pools this applies to as a comma-separated list (* for every provider). Then pick where their endpoints sit: rotated with the provider\u2019s own source addresses, held back as the fallback tier, or preferred on their own.",
     "fields": [
       {
         "key": "apply_to",
@@ -38,10 +39,21 @@
         "description": "Comma-separated provider or pool names. * applies to every provider. A trailing * matches by prefix (zen-*)."
       },
       {
+        "key": "egress_mode",
+        "label": "Exit rotation",
+        "type": "select",
+        "options": [
+          "rotate",
+          "fallback",
+          "vpn_only"
+        ],
+        "description": "rotate: these endpoints and the provider's own source addresses form one rotation. fallback: they take over once the source addresses fail or are rate-limited. vpn_only: they are preferred and the source addresses are the last resort."
+      },
+      {
         "key": "subscriptions",
         "label": "Subscriptions",
         "type": "textarea",
-        "description": "One subscription URL per line (or comma-separated). Plain URI lists and base64-encoded payloads are both accepted."
+        "description": "One entry per line (or comma-separated): a subscription URL, a node URI pasted as-is, or a bare token when a subscription base URL is set. Plain URI lists and base64-encoded payloads are both accepted."
       },
       {
         "key": "subscription_headers",
@@ -49,6 +61,12 @@
         "type": "textarea",
         "secret": true,
         "description": "Optional JSON object of HTTP headers sent when fetching subscriptions, for example {\"Authorization\":\"Bearer …\"}."
+      },
+      {
+        "key": "subscription_base_url",
+        "label": "Subscription base URL",
+        "type": "text",
+        "description": "Optional. A bare token on the Subscriptions line is appended to this URL, so the list can hold only the token. Leave empty when every entry is already a full URL or a node URI."
       },
       {
         "key": "refresh_interval_minutes",
@@ -148,9 +166,9 @@
           {
             "kind": "list",
             "items": [
-              "Local source addresses (bind_ips on the provider) are the preferred tier and are used while they answer.",
-              "Endpoints from your subscriptions are the fallback tier and take over once the preferred tier is rate-limited or unreachable.",
-              "Each attempt picks an exit, and a failed attempt moves to the next one instead of repeating the same failure.",
+              "Exit rotation decides where these endpoints sit: alongside the provider's own source addresses (rotate), behind them (fallback) or in front of them (vpn_only).",
+              "Each attempt picks one exit, and a failed attempt moves to the next one instead of repeating the same failure.",
+              "A rate limit demotes the tier it was reported on, so the next tier takes over until the window ends.",
               "An endpoint that stops answering is cooled down automatically and returns once it recovers."
             ]
           },
@@ -212,7 +230,7 @@
   },
   "requirements": [
     "A tunnel core listening on the local ports listed in the extension settings, unless core_kind is none",
-    "Local source addresses configured on each provider (bind_ips) if you want them preferred over the fallback tier"
+    "Local source addresses configured on each provider (bind_ips) if you want them mixed into or preferred over the endpoints"
   ],
   "notes": [
     "This extension only contributes exits; it does not change how the gateway talks to providers.",
