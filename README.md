@@ -181,7 +181,7 @@ Applied only after the operator clicks **Apply**.
 |-------|-------------|
 | `accent` | Hex color for highlights |
 | `docs_url` / `help` | Docs link / help text in settings |
-| `fields` | Dynamic form fields for sidecar settings |
+| `fields` | Dynamic form fields for sidecar settings (`text`, `number`, `boolean`, `select`, `color`, `textarea`, plus `secret`) |
 | `theme` | Restricted CSS vars (`--accent`, `--bg`, `--text`, …) |
 | `nav[]` | Sidebar entries: `{ id, label, to, icon, order }` |
 | `hide_nav[]` | Hide built-in nav labels/paths |
@@ -202,7 +202,14 @@ no raw HTML/JS:
 { "kind": "links", "links": [{ "label": "Docs", "href": "https://…" }] }
 { "kind": "kv", "kv": [{ "k": "Region", "v": "eu" }] }
 { "kind": "divider" }
+{ "kind": "data", "source": "status", "refresh": 15 }
 ```
+
+The last one is live: `source` names a key the owning extension's addon answers
+on `GET /admin/api/v1/sidecar/extensions/:id/data/<key>`, and `refresh` is the
+poll interval in seconds (default 15). Widgets take the same pair. Supported
+reply shapes are `stats`, `kv`, `items` and `blocks`. Without `source` a block
+is static.
 
 Nav `to`: a path under `/admin/dashboard` (a relative slug becomes
 `/admin/dashboard/ext/…`) or an absolute `https://…`.
@@ -230,6 +237,30 @@ Install `opencode` for the provider type and client signature; add
 | id | role |
 |----|------|
 | `claude-oauth` | **Claude OAuth 2.0** — authorization-code + PKCE wiring (`authorize_url`, `token_url`, `client_id`, `scopes`) with a shipped settings page. Supplies the `oauth` feature only; pair it with a provider-type extension. |
+
+### Exit rotation
+
+A provider can have several exits instead of one, and the gateway picks one per
+attempt:
+
+- `bind_ips` (comma-separated list on the provider, `egress_strategy` selects
+  `round_robin` / `random` / `weighted` / `first`) is the **preferred tier** —
+  used for as long as those addresses answer.
+- An extension's `EgressCandidates` hook contributes a **fallback tier**
+  (proxy URL or source address) reached once the preferred tier is unusable,
+  including when it is rate-limited (429/403). The preferred tier probes back
+  automatically afterwards.
+
+Scope a contribution to a list of providers or pools with the comma-separated
+`apply_to` setting (`*`, exact names, or a `zen-*` prefix pattern).
+
+### Bundled extensions
+
+#### VPN egress
+
+| id | role |
+|----|------|
+| `vpn-egress` | **VPN Egress** — parses subscription endpoints, probes them, keeps the best N (count, latency threshold, sort order) and drops the ones that stopped answering. Contributes a fallback tier scoped to a comma-separated provider/pool list; local source addresses stay preferred. Reports live status on its dashboard page. |
 
 ### Themes
 

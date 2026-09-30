@@ -1,6 +1,14 @@
 {
   "extensions": [
     {
+      "id": "vpn-egress",
+      "name": "VPN Egress",
+      "tagline": "Subscription endpoints as a fallback exit for listed providers",
+      "type": "sidecar",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
       "id": "opencode",
       "name": "OpenCode Emulation",
       "tagline": "OpenCode emulation profile — provider type, headers, tools",
