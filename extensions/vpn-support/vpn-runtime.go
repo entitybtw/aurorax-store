@@ -54,14 +54,37 @@ type Endpoint struct {
 
 // State is persisted next to the addon so it survives reloads.
 type State struct {
-	LastRefresh   time.Time  `json:"last_refresh"`
-	Endpoints     []Endpoint `json:"endpoints"`
-	Selected      []string   `json:"selected"`
-	Errors        []string   `json:"errors"`
-	Subscriptions int        `json:"subscriptions"`
-	Fetched       int        `json:"fetched"`
-	CoreSwitch    string     `json:"core_switch"`
-	SettingsFP    string     `json:"settings_fp"`
+	LastRefresh time.Time  `json:"last_refresh"`
+	Endpoints   []Endpoint `json:"endpoints"`
+	// Selected are the display names of the kept endpoints, in the order the
+	// exits use them. SelectedKeys carries the matching identities
+	// (protocol|host|port) so two endpoints sharing one label stay two
+	// endpoints — subscriptions repeat labels freely and the gateway keys
+	// exit health by name.
+	Selected      []string `json:"selected"`
+	SelectedKeys  []string `json:"selected_keys"`
+	Errors        []string `json:"errors"`
+	Subscriptions int      `json:"subscriptions"`
+	Fetched       int      `json:"fetched"`
+	CoreSwitch    string   `json:"core_switch"`
+	SettingsFP    string   `json:"settings_fp"`
+}
+
+// endpointKey is the identity of an endpoint: protocol + address. Used for
+// deduplication, to mark exactly the endpoints that were kept, and to build
+// the address part of an exit name.
+func endpointKey(e Endpoint) string {
+	return strings.ToLower(e.Protocol) + "|" + strings.ToLower(strings.TrimSpace(e.Host)) + "|" + strconv.Itoa(e.Port)
+}
+
+// endpointAddress turns an endpointKey back into the address shown to the
+// operator: "vless|host|443" -> "host:443".
+func endpointAddress(key string) string {
+	parts := strings.Split(key, "|")
+	if len(parts) != 3 {
+		return ""
+	}
+	return parts[1] + ":" + parts[2]
 }
 
 var (
@@ -250,6 +273,7 @@ func EgressCandidates(raw string) string {
 
 	mu.Lock()
 	selected := append([]string(nil), st.Selected...)
+	selectedKeys := append([]string(nil), st.SelectedKeys...)
 	mu.Unlock()
 
 	if len(selected) == 0 {
@@ -263,16 +287,30 @@ func EgressCandidates(raw string) string {
 	}
 
 	// One exit per selected node: the operator asks for N endpoints and gets
-	// N, and the local ports are simply reused round-robin behind them.
+	// N, and the local ports are simply reused round-robin behind them. The
+	// address rides in the name because the gateway keys exit health by name
+	// and subscriptions reuse display labels across different addresses; a
+	// label+address that still repeats falls back to the full identity.
 	var b strings.Builder
+	seen := make(map[string]bool, len(selected))
 	b.WriteString(`{"candidates":[`)
 	for i, node := range selected {
 		if i > 0 {
 			b.WriteString(",")
 		}
 		port := strings.TrimSpace(ports[i%len(ports)])
+		label := "vpn:" + node
+		if i < len(selectedKeys) && selectedKeys[i] != "" {
+			if addr := endpointAddress(selectedKeys[i]); addr != "" {
+				label = "vpn:" + node + " @ " + addr
+				if seen[label] {
+					label = "vpn:" + node + " @ " + selectedKeys[i]
+				}
+			}
+		}
+		seen[label] = true
 		b.WriteString(`{"name":`)
-		b.WriteString(quote("vpn:" + node))
+		b.WriteString(quote(label))
 		b.WriteString(`,"proxy":`)
 		b.WriteString(quote("socks5://127.0.0.1:" + port))
 		b.WriteString(`,"tier":`)
@@ -392,13 +430,13 @@ func runRefresh(p payload, dir string) {
 	filtered = dedupeEndpoints(filtered)
 
 	keep := toInt(val(p, "node_count", "3"), 3)
-	if keep > 0 && len(filtered) > keep {
-		filtered = filtered[:keep]
-	}
+	picked := pickEndpoints(filtered, keep)
 
-	selected := make([]string, 0, len(filtered))
-	for _, e := range filtered {
+	selected := make([]string, 0, len(picked))
+	selectedKeys := make([]string, 0, len(picked))
+	for _, e := range picked {
 		selected = append(selected, e.Name)
+		selectedKeys = append(selectedKeys, endpointKey(e))
 	}
 
 	coreSwitch := ""
@@ -414,6 +452,7 @@ func runRefresh(p payload, dir string) {
 		LastRefresh:   time.Now(),
 		Endpoints:     endpoints,
 		Selected:      selected,
+		SelectedKeys:  selectedKeys,
 		Errors:        trimErrors(errs),
 		Subscriptions: subs,
 		Fetched:       fetched,
@@ -422,6 +461,48 @@ func runRefresh(p payload, dir string) {
 	}
 	saveStateLocked(dir)
 	mu.Unlock()
+}
+
+// pickEndpoints keeps up to limit endpoints, labels first: a subscription may
+// hand out the same display name for two different addresses, and a repeat
+// would otherwise waste a slot (and collapse into one exit, because the
+// gateway keys exits by name). When labels run out before the count, the
+// remaining slots are filled by address, which is already unique here.
+func pickEndpoints(pool []Endpoint, limit int) []Endpoint {
+	if limit <= 0 {
+		return pool
+	}
+	out := make([]Endpoint, 0, limit)
+	seenLabel := make(map[string]bool, len(pool))
+	for _, e := range pool {
+		if len(out) >= limit {
+			break
+		}
+		if seenLabel[e.Name] {
+			continue
+		}
+		seenLabel[e.Name] = true
+		out = append(out, e)
+	}
+	if len(out) >= limit {
+		return out
+	}
+	seenKey := make(map[string]bool, len(out))
+	for _, e := range out {
+		seenKey[endpointKey(e)] = true
+	}
+	for _, e := range pool {
+		if len(out) >= limit {
+			break
+		}
+		key := endpointKey(e)
+		if seenKey[key] {
+			continue
+		}
+		seenKey[key] = true
+		out = append(out, e)
+	}
+	return out
 }
 
 func trimErrors(in []string) []string {
@@ -845,7 +926,7 @@ func dedupeEndpoints(in []Endpoint) []Endpoint {
 	seen := make(map[string]bool, len(in))
 	out := make([]Endpoint, 0, len(in))
 	for _, e := range in {
-		key := strings.ToLower(e.Protocol) + "|" + strings.ToLower(strings.TrimSpace(e.Host)) + "|" + strconv.Itoa(e.Port)
+		key := endpointKey(e)
 		if seen[key] {
 			continue
 		}
@@ -1081,12 +1162,25 @@ func nodesPayload(snapshot State, kv []map[string]string) string {
 // list against the pool or provider it is rendering and say whether these
 // servers are actually in the rotation.
 func serversPayload(snapshot State, p payload) string {
-	kept := make(map[string]bool, len(snapshot.Selected))
-	for _, name := range snapshot.Selected {
-		kept[name] = true
+	// Prefer addresses: labels repeat across a subscription, so marking by
+	// name would light up every endpoint that shares one of the kept labels.
+	// A state file written before the keys existed falls back to labels.
+	byKey := make(map[string]bool, len(snapshot.SelectedKeys))
+	for _, key := range snapshot.SelectedKeys {
+		byKey[key] = true
 	}
+	byName := make(map[string]bool, len(snapshot.Selected))
+	for _, name := range snapshot.Selected {
+		byName[name] = true
+	}
+	useKeys := len(snapshot.SelectedKeys) > 0
+
 	servers := make([]map[string]any, 0, len(snapshot.Endpoints))
 	for _, e := range snapshot.Endpoints {
+		selected := byName[e.Name]
+		if useKeys {
+			selected = byKey[endpointKey(e)]
+		}
 		servers = append(servers, map[string]any{
 			"host":       e.Host,
 			"port":       e.Port,
@@ -1094,7 +1188,7 @@ func serversPayload(snapshot State, p payload) string {
 			"protocol":   e.Protocol,
 			"alive":      e.Alive,
 			"latency_ms": e.Latency,
-			"selected":   kept[e.Name],
+			"selected":   selected,
 		})
 	}
 	return mustJSON(map[string]any{
