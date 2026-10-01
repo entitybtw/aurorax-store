@@ -4,13 +4,15 @@
   "name": "VPN Support",
   "tagline": "Subscription VPN endpoints for the providers you choose",
   "description": "Add VPN endpoints to the exit set of the providers or pools you list. Paste a subscription (or a node URI), pick how many IPs to keep and how they are used, and the gateway takes care of the rest: it fetches the subscription, parses every endpoint, probes it, keeps the best ones and drops the ones that stopped answering, then repeats on the configured refresh interval so expired subscriptions are replaced automatically. Each endpoint list can be bound to several providers or pools at once. This extension ships only its own runtime and UI addons — no gateway code is required for it to work.",
-  "version": "3",
+  "version": "4",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
   "type": "sidecar",
   "provides": {
-    "features": ["egress"]
+    "features": [
+      "egress"
+    ]
   },
   "settings": {
     "apply_to": "*",
@@ -72,7 +74,11 @@
         "advanced": true,
         "label": "Selection order",
         "type": "select",
-        "options": ["best_first", "worst_first", "random"],
+        "options": [
+          "best_first",
+          "worst_first",
+          "random"
+        ],
         "description": "Sort the probed IPs by latency: best first, worst first, or shuffled."
       },
       {
@@ -94,7 +100,11 @@
         "advanced": true,
         "label": "Tunnel core",
         "type": "select",
-        "options": ["none", "static", "singbox"],
+        "options": [
+          "none",
+          "static",
+          "singbox"
+        ],
         "description": "none: report IPs only, no local ports expected. static: you run the core and map each local port to an endpoint yourself. singbox: the gateway switches the active endpoint through the core's Clash API."
       },
       {
@@ -176,7 +186,10 @@
         "label": "VPN support",
         "icon": "shield",
         "blocks": [
-          { "kind": "heading", "text": "How exits are chosen" },
+          {
+            "kind": "heading",
+            "text": "How exits are chosen"
+          },
           {
             "kind": "list",
             "items": [
@@ -186,7 +199,10 @@
               "An IP that stops answering is cooled down automatically and returns once it recovers."
             ]
           },
-          { "kind": "heading", "text": "IPs" },
+          {
+            "kind": "heading",
+            "text": "IPs"
+          },
           {
             "kind": "list",
             "items": [
@@ -196,7 +212,9 @@
               "The same IP list can be bound to several providers or pools at once."
             ]
           },
-          { "kind": "divider" },
+          {
+            "kind": "divider"
+          },
           {
             "kind": "text",
             "text": "Review every subscription and endpoint you add. This extension contacts third-party services you configure."
@@ -216,16 +234,38 @@
             "kind": "text",
             "text": "VPN support contacts the subscription endpoints you configure. Review them before enabling."
           },
-          { "kind": "heading", "text": "Status" },
-          { "kind": "data", "source": "status", "refresh": 15 },
-          { "kind": "divider" },
-          { "kind": "heading", "text": "IP list" },
-          { "kind": "data", "source": "nodes", "refresh": 30 }
+          {
+            "kind": "heading",
+            "text": "Status"
+          },
+          {
+            "kind": "data",
+            "source": "status",
+            "refresh": 15
+          },
+          {
+            "kind": "divider"
+          },
+          {
+            "kind": "heading",
+            "text": "IP list"
+          },
+          {
+            "kind": "data",
+            "source": "nodes",
+            "refresh": 30
+          }
         ]
       }
     ],
     "nav": [
-      { "id": "vpn", "label": "VPN", "to": "vpn", "icon": "shield", "order": 80 }
+      {
+        "id": "vpn",
+        "label": "VPN",
+        "to": "vpn",
+        "icon": "shield",
+        "order": 80
+      }
     ],
     "widgets": [
       {
@@ -249,6 +289,8 @@
     "Review third-party extensions before installing them from a store."
   ],
   "files": {
-    "vpn-runtime.go": { "ref": "vpn-support/vpn-runtime.go" }
+    "vpn-runtime.go": {
+      "ref": "vpn-support/vpn-runtime.go"
+    }
   }
 }
