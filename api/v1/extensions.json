@@ -1,9 +1,9 @@
 {
   "extensions": [
     {
-      "id": "vpn-egress",
-      "name": "VPN Egress",
-      "tagline": "Subscription endpoints as a fallback exit for listed providers",
+      "id": "vpn-support",
+      "name": "VPN Support",
+      "tagline": "Subscription VPN endpoints for the providers you choose",
       "type": "sidecar",
       "version": "1",
       "author": "aurora"

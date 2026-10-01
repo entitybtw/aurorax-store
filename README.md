@@ -256,11 +256,11 @@ Scope a contribution to a list of providers or pools with the comma-separated
 
 ### Bundled extensions
 
-#### VPN egress
+#### VPN support
 
 | id | role |
 |----|------|
-| `vpn-egress` | **VPN Egress** — parses subscription endpoints, probes them, keeps the best N (count, latency threshold, sort order) and drops the ones that stopped answering. Contributes a fallback tier scoped to a comma-separated provider/pool list; local source addresses stay preferred. Reports live status on its dashboard page. |
+| `vpn-support` | **VPN Support** — reads the subscriptions you paste, parses every endpoint, probes it, keeps the best N (count, latency threshold, sort order) and drops the ones that stopped answering, then re-reads the subscriptions on the configured interval so expired entries are replaced. One IP list can be bound to several providers or pools at once, and `egress_mode` decides whether those IPs rotate with the provider's own source addresses, take over as the fallback tier, or are preferred. Reports live status and the current IP list on its dashboard page. |
 
 ### Themes
 

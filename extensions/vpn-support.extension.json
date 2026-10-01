@@ -1,0 +1,244 @@
+{
+  "schema": 1,
+  "id": "vpn-support",
+  "name": "VPN Support",
+  "tagline": "Subscription VPN endpoints for the providers you choose",
+  "description": "Add VPN endpoints to the exit set of the providers or pools you list. Paste a subscription (or a node URI), pick how many IPs to keep and how they are used, and the gateway takes care of the rest: it fetches the subscription, parses every endpoint, probes it, keeps the best ones and drops the ones that stopped answering, then repeats on the configured refresh interval so expired subscriptions are replaced automatically. Each endpoint list can be bound to several providers or pools at once. This extension ships only its own runtime and UI addons — no gateway code is required for it to work.",
+  "version": "1",
+  "author": "aurora",
+  "homepage": "",
+  "license": "MIT",
+  "type": "sidecar",
+  "provides": {
+    "features": ["egress"]
+  },
+  "settings": {
+    "apply_to": "*",
+    "egress_mode": "rotate",
+    "refresh_interval_minutes": "30",
+    "node_count": "3",
+    "node_order": "best_first",
+    "quality_max_ms": "400",
+    "probe_count": "3",
+    "probe_timeout_ms": "1500",
+    "protocols": "vless,vmess,ss,trojan",
+    "local_socks_ports": "1080",
+    "core_kind": "none",
+    "core_api_url": "http://127.0.0.1:9090",
+    "core_group": "proxy"
+  },
+  "ui": {
+    "accent": "#7dcfff",
+    "docs_url": "",
+    "help": "Paste a subscription URL (or a node URI), choose how many IPs to keep, pick where they sit in the exit rotation and list the providers or pools they apply to — several names, separated by commas. Auto-fetch re-reads the subscriptions on the configured interval so entries that expired are replaced.",
+    "fields": [
+      {
+        "key": "subscriptions",
+        "label": "Subscriptions",
+        "type": "textarea",
+        "description": "One entry per line (or comma-separated): a subscription URL, a node URI pasted as-is, or a bare token when a subscription base URL is set. Plain URI lists and base64-encoded payloads are both accepted."
+      },
+      {
+        "key": "node_count",
+        "label": "IPs to keep",
+        "type": "number",
+        "description": "How many IPs are kept after probing and sorting. 0 keeps all of them."
+      },
+      {
+        "key": "egress_mode",
+        "label": "Exit mode",
+        "type": "select",
+        "options": [
+          "rotate",
+          "fallback",
+          "vpn_only"
+        ],
+        "description": "rotate: these IPs and the provider's own source addresses form one rotation. fallback: they take over once the source addresses fail or are rate-limited. vpn_only: they are preferred and the source addresses are the last resort."
+      },
+      {
+        "key": "apply_to",
+        "label": "Providers and pools",
+        "type": "textarea",
+        "description": "Comma-separated provider or pool names this IP list binds to, for example opencode-zen, backup. * applies to every provider. A trailing * matches by prefix (zen-*)."
+      },
+      {
+        "key": "refresh_interval_minutes",
+        "label": "Auto-fetch interval (minutes)",
+        "type": "number",
+        "description": "How often subscriptions are re-read and IPs re-probed, so expired entries are replaced. 0 disables the scheduled refresh."
+      },
+      {
+        "key": "node_order",
+        "label": "Selection order",
+        "type": "select",
+        "options": ["best_first", "worst_first", "random"],
+        "description": "Sort the probed IPs by latency: best first, worst first, or shuffled."
+      },
+      {
+        "key": "quality_max_ms",
+        "label": "Quality threshold (ms)",
+        "type": "number",
+        "description": "IPs slower than this are dropped. 0 keeps every IP that answers."
+      },
+      {
+        "key": "local_socks_ports",
+        "label": "Local SOCKS ports",
+        "type": "textarea",
+        "description": "Comma-separated local ports your tunnel core listens on. One port = one exit; several ports let the gateway rotate between them."
+      },
+      {
+        "key": "core_kind",
+        "label": "Tunnel core",
+        "type": "select",
+        "options": ["none", "static", "singbox"],
+        "description": "none: report IPs only, no local ports expected. static: you run the core and map each local port to an endpoint yourself. singbox: the gateway switches the active endpoint through the core's Clash API."
+      },
+      {
+        "key": "protocols",
+        "label": "Protocols",
+        "type": "textarea",
+        "description": "Comma-separated protocols to keep, for example vless,vmess,ss,trojan."
+      },
+      {
+        "key": "region_include",
+        "label": "Regions to keep",
+        "type": "textarea",
+        "description": "Comma-separated region/name fragments to keep. Empty keeps everything."
+      },
+      {
+        "key": "region_exclude",
+        "label": "Regions to drop",
+        "type": "textarea",
+        "description": "Comma-separated region/name fragments to drop."
+      },
+      {
+        "key": "probe_count",
+        "label": "Probe samples",
+        "type": "number",
+        "description": "Number of connection attempts per IP; the median is used."
+      },
+      {
+        "key": "probe_timeout_ms",
+        "label": "Probe timeout (ms)",
+        "type": "number",
+        "description": "Per-sample connection timeout. IPs that never answer are removed."
+      },
+      {
+        "key": "subscription_base_url",
+        "label": "Subscription base URL",
+        "type": "text",
+        "description": "Optional. A bare token on the Subscriptions line is appended to this URL, so the list can hold only the token. Leave empty when every entry is already a full URL or a node URI."
+      },
+      {
+        "key": "subscription_headers",
+        "label": "Subscription headers",
+        "type": "textarea",
+        "secret": true,
+        "description": "Optional JSON object of HTTP headers sent when fetching subscriptions, for example {\"Authorization\":\"Bearer …\"}."
+      },
+      {
+        "key": "core_api_url",
+        "label": "Core HTTP API",
+        "type": "text",
+        "description": "Base URL of the core's control API, for example http://127.0.0.1:9090."
+      },
+      {
+        "key": "core_api_token",
+        "label": "Core API secret",
+        "type": "text",
+        "secret": true,
+        "description": "Optional bearer token for the core's control API."
+      },
+      {
+        "key": "core_group",
+        "label": "Core selector group",
+        "type": "text",
+        "description": "Proxy group or outbound tag the endpoint is switched on."
+      }
+    ],
+    "settings_tabs": [
+      {
+        "id": "vpn-support",
+        "label": "VPN support",
+        "icon": "shield",
+        "blocks": [
+          { "kind": "heading", "text": "How exits are chosen" },
+          {
+            "kind": "list",
+            "items": [
+              "Exit mode decides where these IPs sit: alongside the provider's own source addresses (rotate), behind them (fallback) or in front of them (vpn_only).",
+              "Each attempt picks one exit, and a failed attempt moves to the next one instead of repeating the same failure.",
+              "A rate limit demotes the tier it was reported on, so the next tier takes over until the window ends.",
+              "An IP that stops answering is cooled down automatically and returns once it recovers."
+            ]
+          },
+          { "kind": "heading", "text": "IPs" },
+          {
+            "kind": "list",
+            "items": [
+              "IPs are probed, sorted by latency, filtered by the quality threshold and trimmed to the configured count.",
+              "IPs that do not answer within the probe timeout are removed rather than kept as dead weight.",
+              "Subscriptions are re-read on the configured auto-fetch interval, so expired entries are replaced automatically.",
+              "The same IP list can be bound to several providers or pools at once."
+            ]
+          },
+          { "kind": "divider" },
+          {
+            "kind": "text",
+            "text": "Review every subscription and endpoint you add. This extension contacts third-party services you configure."
+          }
+        ]
+      }
+    ],
+    "pages": [
+      {
+        "id": "vpn-support-status",
+        "path": "vpn",
+        "title": "VPN support",
+        "icon": "shield",
+        "summary": "Live subscription and IP status",
+        "blocks": [
+          { "kind": "heading", "text": "Status" },
+          { "kind": "data", "source": "status", "refresh": 15 },
+          { "kind": "divider" },
+          { "kind": "heading", "text": "IP list" },
+          { "kind": "data", "source": "nodes", "refresh": 30 }
+        ]
+      }
+    ],
+    "nav": [
+      { "id": "vpn", "label": "VPN", "to": "vpn", "icon": "shield", "order": 80 }
+    ],
+    "widgets": [
+      {
+        "id": "vpn-support-widget",
+        "slot": "overview",
+        "title": "VPN support",
+        "kind": "stats",
+        "source": "status",
+        "refresh": 30,
+        "order": 40
+      }
+    ],
+    "banners": [
+      {
+        "id": "vpn-support-review",
+        "level": "info",
+        "message": "VPN support contacts the subscription endpoints you configure. Review them before enabling.",
+        "order": 50
+      }
+    ]
+  },
+  "requirements": [
+    "A tunnel core listening on the local ports listed in the extension settings, unless core_kind is none",
+    "Local source addresses configured on each provider (bind_ips) if you want them mixed into or preferred over the endpoints"
+  ],
+  "notes": [
+    "This extension only contributes exits; it does not change how the gateway talks to providers.",
+    "Subscription URLs, headers and the core API secret are stored in the gateway's extension config.",
+    "Review third-party extensions before installing them from a store."
+  ],
+  "files": {
+    "vpn-runtime.go": { "ref": "vpn-support/vpn-runtime.go" }
+  }
+}

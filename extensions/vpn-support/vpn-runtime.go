@@ -1,7 +1,7 @@
 // addon-kind: runtime
 package main
 
-// VPN egress runtime addon.
+// VPN support runtime addon.
 //
 // Reads subscriptions you list, parses them, probes every endpoint, keeps the
 // best ones (count, latency threshold, sort order) and drops the ones that
@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	stateFile       = "vpn-egress-state.json"
+	stateFile       = "vpn-support-state.json"
 	minRefreshGap   = 30 * time.Second
 	fetchTimeout    = 30 * time.Second
 	switchTimeout   = 10 * time.Second
@@ -444,7 +444,11 @@ func collect(p payload) ([]Endpoint, []string, int, int) {
 			out = append(out, ep)
 		}
 	}
-	return out, errs, len(entries), fetched
+	// Yaegi miscompiles `len()` used directly as one argument of a
+	// multi-value return (the destination slot ends up holding the slice),
+	// so the length is computed into a named int first.
+	count := len(entries)
+	return out, errs, count, fetched
 }
 
 // isSubscriptionURL reports whether the entry is fetched over http(s).
@@ -468,7 +472,7 @@ func fetchSubscription(rawURL string, headers map[string]string) (string, error)
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set("User-Agent", "aurora-vpn-egress/1")
+	req.Header.Set("User-Agent", "aurora-vpn-support/1")
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
