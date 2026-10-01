@@ -414,6 +414,11 @@ func maybeStartRefresh(p payload, dir string) {
 func runRefresh(p payload, dir string) {
 	endpoints, errs, subs, fetched := collect(p)
 
+	// The raw list repeats entries across subscriptions and even inside one;
+	// keep a single row per distinct endpoint so the status, the IP list and
+	// the "selected" flag count endpoints rather than repetitions.
+	endpoints = dedupeEndpoints(endpoints)
+
 	timeoutMS := toInt(val(p, "probe_timeout_ms", "1500"), 1500)
 	samples := toInt(val(p, "probe_count", "3"), 3)
 	if samples < 1 {

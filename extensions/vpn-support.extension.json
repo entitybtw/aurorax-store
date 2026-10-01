@@ -4,7 +4,7 @@
   "name": "VPN Support",
   "tagline": "Subscription VPN endpoints for the providers you choose",
   "description": "Add VPN endpoints to the exit set of the providers or pools you list. Paste a subscription (or a node URI), pick how many IPs to keep and how they are used, and the gateway takes care of the rest: it fetches the subscription, parses every endpoint, probes it, keeps the best ones and drops the ones that stopped answering, then repeats on the configured refresh interval so expired subscriptions are replaced automatically. Each endpoint list can be bound to several providers or pools at once. This extension ships only its own runtime and UI addons — no gateway code is required for it to work.",
-  "version": "5",
+  "version": "6",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
