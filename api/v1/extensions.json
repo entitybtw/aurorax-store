@@ -5,7 +5,7 @@
       "name": "VPN Support",
       "tagline": "Subscription VPN endpoints for the providers you choose",
       "type": "sidecar",
-      "version": "2",
+      "version": "3",
       "author": "aurora"
     },
     {

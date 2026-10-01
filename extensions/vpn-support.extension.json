@@ -4,7 +4,7 @@
   "name": "VPN Support",
   "tagline": "Subscription VPN endpoints for the providers you choose",
   "description": "Add VPN endpoints to the exit set of the providers or pools you list. Paste a subscription (or a node URI), pick how many IPs to keep and how they are used, and the gateway takes care of the rest: it fetches the subscription, parses every endpoint, probes it, keeps the best ones and drops the ones that stopped answering, then repeats on the configured refresh interval so expired subscriptions are replaced automatically. Each endpoint list can be bound to several providers or pools at once. This extension ships only its own runtime and UI addons — no gateway code is required for it to work.",
-  "version": "2",
+  "version": "3",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
@@ -69,6 +69,7 @@
       },
       {
         "key": "node_order",
+        "advanced": true,
         "label": "Selection order",
         "type": "select",
         "options": ["best_first", "worst_first", "random"],
@@ -76,18 +77,21 @@
       },
       {
         "key": "quality_max_ms",
+        "advanced": true,
         "label": "Quality threshold (ms)",
         "type": "number",
         "description": "IPs slower than this are dropped. 0 keeps every IP that answers."
       },
       {
         "key": "local_socks_ports",
+        "advanced": true,
         "label": "Local SOCKS ports",
         "type": "textarea",
         "description": "Comma-separated local ports your tunnel core listens on. One port = one exit; several ports let the gateway rotate between them."
       },
       {
         "key": "core_kind",
+        "advanced": true,
         "label": "Tunnel core",
         "type": "select",
         "options": ["none", "static", "singbox"],
@@ -95,42 +99,49 @@
       },
       {
         "key": "protocols",
+        "advanced": true,
         "label": "Protocols",
         "type": "textarea",
         "description": "Comma-separated protocols to keep, for example vless,vmess,ss,trojan."
       },
       {
         "key": "region_include",
+        "advanced": true,
         "label": "Regions to keep",
         "type": "textarea",
         "description": "Comma-separated region/name fragments to keep. Empty keeps everything."
       },
       {
         "key": "region_exclude",
+        "advanced": true,
         "label": "Regions to drop",
         "type": "textarea",
         "description": "Comma-separated region/name fragments to drop."
       },
       {
         "key": "probe_count",
+        "advanced": true,
         "label": "Probe samples",
         "type": "number",
         "description": "Number of connection attempts per IP; the median is used."
       },
       {
         "key": "probe_timeout_ms",
+        "advanced": true,
         "label": "Probe timeout (ms)",
         "type": "number",
         "description": "Per-sample connection timeout. IPs that never answer are removed."
       },
       {
         "key": "subscription_base_url",
+        "advanced": true,
         "label": "Subscription base URL",
         "type": "text",
         "description": "Optional. A bare token on the Subscriptions line is appended to this URL, so the list can hold only the token. Leave empty when every entry is already a full URL or a node URI."
       },
       {
         "key": "subscription_headers",
+        "advanced": true,
         "label": "Subscription headers",
         "type": "textarea",
         "secret": true,
@@ -138,12 +149,14 @@
       },
       {
         "key": "core_api_url",
+        "advanced": true,
         "label": "Core HTTP API",
         "type": "text",
         "description": "Base URL of the core's control API, for example http://127.0.0.1:9090."
       },
       {
         "key": "core_api_token",
+        "advanced": true,
         "label": "Core API secret",
         "type": "text",
         "secret": true,
@@ -151,6 +164,7 @@
       },
       {
         "key": "core_group",
+        "advanced": true,
         "label": "Core selector group",
         "type": "text",
         "description": "Proxy group or outbound tag the endpoint is switched on."
@@ -198,6 +212,10 @@
         "icon": "shield",
         "summary": "Live subscription and IP status",
         "blocks": [
+          {
+            "kind": "text",
+            "text": "VPN support contacts the subscription endpoints you configure. Review them before enabling."
+          },
           { "kind": "heading", "text": "Status" },
           { "kind": "data", "source": "status", "refresh": 15 },
           { "kind": "divider" },
@@ -218,14 +236,6 @@
         "source": "status",
         "refresh": 30,
         "order": 40
-      }
-    ],
-    "banners": [
-      {
-        "id": "vpn-support-review",
-        "level": "info",
-        "message": "VPN support contacts the subscription endpoints you configure. Review them before enabling.",
-        "order": 50
       }
     ]
   },

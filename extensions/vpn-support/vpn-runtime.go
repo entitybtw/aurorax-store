@@ -995,6 +995,12 @@ func Data(raw string) string {
 	if strings.TrimSpace(p.Key) == "nodes" {
 		return nodesPayload(snapshot, kv)
 	}
+	// Machine-readable endpoint list for the dashboard: a pool or a provider
+	// shows which servers are bound to it straight from this payload, without
+	// scraping the prose the "nodes" key renders for humans.
+	if strings.TrimSpace(p.Key) == "servers" {
+		return serversPayload(snapshot, p)
+	}
 
 	blocks := []any{
 		map[string]any{"kind": "kv", "kv": kv},
@@ -1036,6 +1042,38 @@ func nodesPayload(snapshot State, kv []map[string]string) string {
 		})
 	}
 	return mustJSON(map[string]any{"blocks": blocks})
+}
+
+// serversPayload is the machine-readable endpoint list behind the dashboard's
+// pool and provider views. Every endpoint is listed with the flags an operator
+// needs to tell the kept ones from the rest: `selected` marks the endpoints
+// that survived probing and trimming, `alive` whether the last probe answered.
+// apply_to, egress_mode and core_kind ride along so the caller can match the
+// list against the pool or provider it is rendering and say whether these
+// servers are actually in the rotation.
+func serversPayload(snapshot State, p payload) string {
+	kept := make(map[string]bool, len(snapshot.Selected))
+	for _, name := range snapshot.Selected {
+		kept[name] = true
+	}
+	servers := make([]map[string]any, 0, len(snapshot.Endpoints))
+	for _, e := range snapshot.Endpoints {
+		servers = append(servers, map[string]any{
+			"host":       e.Host,
+			"port":       e.Port,
+			"name":       e.Name,
+			"protocol":   e.Protocol,
+			"alive":      e.Alive,
+			"latency_ms": e.Latency,
+			"selected":   kept[e.Name],
+		})
+	}
+	return mustJSON(map[string]any{
+		"apply_to":    val(p, "apply_to", "*"),
+		"egress_mode": val(p, "egress_mode", "rotate"),
+		"core_kind":   val(p, "core_kind", "none"),
+		"servers":     servers,
+	})
 }
 
 func orDash(v string) string {
