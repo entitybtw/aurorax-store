@@ -252,23 +252,29 @@ func EgressCandidates(raw string) string {
 	selected := append([]string(nil), st.Selected...)
 	mu.Unlock()
 
-	ports := splitList(val(p, "local_socks_ports", "1080"))
-	if len(ports) == 0 || len(selected) == 0 {
+	if len(selected) == 0 {
 		return `{"candidates":[]}`
 	}
 
 	tier := egressTier(p)
+	ports := splitList(val(p, "local_socks_ports", "1080"))
+	if len(ports) == 0 {
+		ports = []string{"1080"}
+	}
+
+	// One exit per selected node: the operator asks for N endpoints and gets
+	// N, and the local ports are simply reused round-robin behind them.
 	var b strings.Builder
 	b.WriteString(`{"candidates":[`)
-	for i, port := range ports {
+	for i, node := range selected {
 		if i > 0 {
 			b.WriteString(",")
 		}
-		node := selected[i%len(selected)]
+		port := strings.TrimSpace(ports[i%len(ports)])
 		b.WriteString(`{"name":`)
 		b.WriteString(quote("vpn:" + node))
 		b.WriteString(`,"proxy":`)
-		b.WriteString(quote("socks5://127.0.0.1:" + strings.TrimSpace(port)))
+		b.WriteString(quote("socks5://127.0.0.1:" + port))
 		b.WriteString(`,"tier":`)
 		b.WriteString(strconv.Itoa(tier))
 		b.WriteString(`}`)
@@ -379,6 +385,11 @@ func runRefresh(p payload, dir string) {
 
 	filtered, filterErrs := filterEndpoints(p, endpoints)
 	errs = append(errs, filterErrs...)
+
+	// Subscriptions repeat the same node under several names; keeping two
+	// entries for one host:port would burn a slot of node_count on a
+	// duplicate and later collapse into a single exit anyway.
+	filtered = dedupeEndpoints(filtered)
 
 	keep := toInt(val(p, "node_count", "3"), 3)
 	if keep > 0 && len(filtered) > keep {
@@ -828,6 +839,24 @@ func probeOne(host string, port, timeoutMS, samples int) (int, bool) {
 }
 
 // filterEndpoints applies protocol, region and quality filters, then sorts.
+// dedupeEndpoints drops repeated nodes, keeping the fastest probe of each
+// identical protocol+host+port so one node is never counted twice.
+func dedupeEndpoints(in []Endpoint) []Endpoint {
+	seen := make(map[string]bool, len(in))
+	out := make([]Endpoint, 0, len(in))
+	for _, e := range in {
+		key := strings.ToLower(e.Protocol) + "|" + strings.ToLower(strings.TrimSpace(e.Host)) + "|" + strconv.Itoa(e.Port)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		out = append(out, e)
+	}
+	return out
+}
+
+// filterEndpoints narrows the probed set to the operator's protocols, regions
+// and quality bar, then orders it the way node_order asks.
 func filterEndpoints(p payload, endpoints []Endpoint) ([]Endpoint, []string) {
 	var errs []string
 	allowed := map[string]bool{}
