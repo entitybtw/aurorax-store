@@ -14,6 +14,7 @@ package main
 // request.
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -60,6 +61,7 @@ type State struct {
 	Subscriptions int        `json:"subscriptions"`
 	Fetched       int        `json:"fetched"`
 	CoreSwitch    string     `json:"core_switch"`
+	SettingsFP    string     `json:"settings_fp"`
 }
 
 var (
@@ -298,6 +300,38 @@ func egressTier(p payload) int {
 	}
 }
 
+// fetchSettings are the keys whose value changes what a refresh fetches and
+// keeps. Everything else (exit mode, core, target list) only affects how the
+// already fetched set is used, so it does not invalidate the last refresh.
+var fetchSettings = []string{
+	"subscriptions",
+	"subscription_headers",
+	"subscription_base_url",
+	"node_count",
+	"node_order",
+	"quality_max_ms",
+	"probe_count",
+	"probe_timeout_ms",
+	"protocols",
+	"region_include",
+	"region_exclude",
+}
+
+// settingsFP fingerprints the fetch-relevant settings. The gateway never calls
+// this addon's OnSettingsSave hook, so without this the operator would wait
+// out the whole refresh interval after editing a subscription.
+func settingsFP(p payload) string {
+	var b strings.Builder
+	for _, key := range fetchSettings {
+		b.WriteString(key)
+		b.WriteByte(0)
+		b.WriteString(val(p, key, ""))
+		b.WriteByte(0x1f)
+	}
+	sum := sha256.Sum256([]byte(b.String()))
+	return fmt.Sprintf("%x", sum[:8])
+}
+
 // maybeStartRefresh kicks off a background refresh when one is due. The pick
 // path never waits for it.
 func maybeStartRefresh(p payload, dir string) {
@@ -305,13 +339,16 @@ func maybeStartRefresh(p payload, dir string) {
 		return
 	}
 	interval := toInt(val(p, "refresh_interval_minutes", "30"), 30)
+	fp := settingsFP(p)
 
 	mu.Lock()
+	changed := st.SettingsFP != fp
 	never := st.LastRefresh.IsZero()
-	due := never || (interval > 0 && time.Since(st.LastRefresh) >= time.Duration(interval)*time.Minute)
+	due := never || changed || (interval > 0 && time.Since(st.LastRefresh) >= time.Duration(interval)*time.Minute)
 	// A gap guard keeps a tiny interval from spinning the fetcher when the
-	// operator saves settings repeatedly.
-	tooSoon := !never && time.Since(st.LastRefresh) < minRefreshGap
+	// operator saves settings repeatedly. An edited setting is the operator
+	// asking for fresh data, so it bypasses the guard.
+	tooSoon := !never && !changed && time.Since(st.LastRefresh) < minRefreshGap
 	if !due || refreshing || tooSoon {
 		mu.Unlock()
 		return
@@ -370,6 +407,7 @@ func runRefresh(p payload, dir string) {
 		Subscriptions: subs,
 		Fetched:       fetched,
 		CoreSwitch:    coreSwitch,
+		SettingsFP:    settingsFP(p),
 	}
 	saveStateLocked(dir)
 	mu.Unlock()
@@ -921,6 +959,7 @@ func switchCore(p payload, node string) string {
 func Data(raw string) string {
 	p := parsePayload(raw)
 	loadState(p.Dir)
+	maybeStartRefresh(p, p.Dir)
 
 	mu.Lock()
 	snapshot := st
