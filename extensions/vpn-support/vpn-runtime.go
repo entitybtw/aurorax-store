@@ -281,10 +281,7 @@ func EgressCandidates(raw string) string {
 	}
 
 	tier := egressTier(p)
-	ports := splitList(val(p, "local_socks_ports", "1080"))
-	if len(ports) == 0 {
-		ports = []string{"1080"}
-	}
+	ports := egressPorts(p, len(selected))
 
 	// One exit per selected node: the operator asks for N endpoints and gets
 	// N, and the local ports are simply reused round-robin behind them. The
@@ -319,6 +316,68 @@ func EgressCandidates(raw string) string {
 	}
 	b.WriteString(`]}`)
 	return b.String()
+}
+
+// egressPorts returns one local SOCKS port per selected endpoint.
+//
+// Two or more ports in local_socks_ports are used exactly as written, so an
+// operator who wired a fixed set keeps it. Anything else — an empty value or
+// the default single port — is the base of an auto-sized range: base,
+// base+1, … for as many endpoints as are kept right now. That keeps
+// node_count=0 (keep everything) correct after every refresh: the range
+// follows the count instead of collapsing several exits onto one port.
+func egressPorts(p payload, count int) []string {
+	explicit := splitList(val(p, "local_socks_ports", ""))
+	if len(explicit) > 1 {
+		ports := make([]string, 0, len(explicit))
+		for _, port := range explicit {
+			ports = append(ports, strings.TrimSpace(port))
+		}
+		return ports
+	}
+	base := 1080
+	if len(explicit) == 1 {
+		if n, err := strconv.Atoi(strings.TrimSpace(explicit[0])); err == nil && n > 0 {
+			base = n
+		}
+	}
+	if count < 1 {
+		count = 1
+	}
+	if base+count-1 > 65535 {
+		base = 65536 - count
+		if base < 1 {
+			base = 1
+		}
+	}
+	ports := make([]string, 0, count)
+	for i := 0; i < count; i++ {
+		ports = append(ports, strconv.Itoa(base+i))
+	}
+	return ports
+}
+
+// portRangeLabel reads a contiguous range as "1080-1085" and falls back to
+// the plain list, so the status says what the tunnel core has to listen on.
+func portRangeLabel(ports []string) string {
+	if len(ports) == 0 {
+		return "—"
+	}
+	first, err := strconv.Atoi(ports[0])
+	if err == nil && len(ports) > 1 {
+		contiguous := true
+		for i, port := range ports[1:] {
+			n, convErr := strconv.Atoi(port)
+			if convErr != nil || n != first+i+1 {
+				contiguous = false
+				break
+			}
+		}
+		if contiguous {
+			return ports[0] + "-" + ports[len(ports)-1]
+		}
+	}
+	return strings.Join(ports, ", ")
 }
 
 // egressTier maps this extension's egress_mode onto the gateway's exit tiers:
@@ -1105,6 +1164,15 @@ func Data(raw string) string {
 		{"k": "Rotation", "v": orDash(val(p, "egress_mode", "rotate"))},
 		{"k": "Order", "v": orDash(val(p, "node_order", "best_first"))},
 		{"k": "Keep", "v": orDash(val(p, "node_count", "3"))},
+	}
+	// With a tunnel core in play the port list is the contract with it, and
+	// it follows the kept count — say what it is instead of leaving the
+	// operator to work it out.
+	if !strings.EqualFold(strings.TrimSpace(val(p, "core_kind", "none")), "none") {
+		kv = append(kv, map[string]string{
+			"k": "Local ports",
+			"v": portRangeLabel(egressPorts(p, len(snapshot.Selected))),
+		})
 	}
 
 	if strings.TrimSpace(p.Key) == "nodes" {

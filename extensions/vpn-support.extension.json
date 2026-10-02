@@ -4,7 +4,7 @@
   "name": "VPN Support",
   "tagline": "Subscription VPN endpoints for the providers you choose",
   "description": "Add VPN endpoints to the exit set of the providers or pools you list. Paste a subscription (or a node URI), pick how many IPs to keep and how they are used, and the gateway takes care of the rest: it fetches the subscription, parses every endpoint, probes it, keeps the best ones and drops the ones that stopped answering, then repeats on the configured refresh interval so expired subscriptions are replaced automatically. Each endpoint list can be bound to several providers or pools at once. This extension ships only its own runtime and UI addons — no gateway code is required for it to work.",
-  "version": "6",
+  "version": "7",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
@@ -94,7 +94,7 @@
         "advanced": true,
         "label": "Local SOCKS ports",
         "type": "textarea",
-        "description": "Comma-separated local ports your tunnel core listens on. One port = one exit; several ports let the gateway rotate between them."
+        "description": "Local SOCKS ports for the tunnel core. Leave the default single port and the range sizes itself to how many endpoints are kept (1080, 1081, …, one per kept endpoint — including node_count 0 = keep all, after every refresh). List two or more ports to pin the set exactly."
       },
       {
         "key": "core_kind",
@@ -106,7 +106,7 @@
           "static",
           "singbox"
         ],
-        "description": "none: report IPs only, no local ports expected. static: you run the core and map each local port to an endpoint yourself. singbox: the gateway switches the active endpoint through the core's Clash API."
+        "description": "none: report endpoints only, no local ports expected. static: you run the core listening on the port range shown on the Status tab (one port per kept endpoint). singbox: the gateway switches the active endpoint through the core's Clash API."
       },
       {
         "key": "protocols",
