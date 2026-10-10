@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-de",
+  "name": "Deutsche Sprache",
+  "tagline": "Erweiterungen von AuroraX auf Deutsch",
+  "description": "Sprachpaket: übersetzt Namen, Beschreibungen, Hilfetexte, Einstellungsbeschriftungen und Seiten der Erweiterungen aus dem AuroraX-Store.",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "de",
+  "catalog": {
+    "opencode": {
+      "name": "OpenCode-Emulation",
+      "tagline": "OpenCode-Emulationsprofil — Providertyp, Header, Tools",
+      "description": "Fügt den optionalen CLI-Providertyp hinzu, dessen Tool-Typen und emuliert den CLI-Client des Upstreams (Header und vollständiges Tool-Schema). Funktioniert für freien Tarif und bezahlten API-Key-Traffic; der freie Tarif verlangt einen Session-Header mit exakt 26 Hex-Zeichen. Die Device-Flow-Autorisierung liegt in der separaten Erweiterung opencode-oauth.",
+      "ui": {
+        "help": "Installiert den optionalen Providertyp, Header und Tools. Fügen Sie OpenCode OAuth separat hinzu, wenn Sie Device-Flow-Autorisierung brauchen."
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "OAuth Device-Flow für den optionalen Providertyp",
+      "description": "OAuth-Device-Flow-Verkabelung (Server, client_id, Prüfbasis) für den optionalen Providertyp. Stellt nur das oauth-Feature bereit. Installieren Sie daneben die opencode-CLI-Erweiterung für Providertyp, Header, Tools und Client-Signatur.",
+      "ui": {
+        "help": "Verkabelt OAuth Device-Flow für den optionalen Providertyp. Keine Header oder Tools — mit der opencode-CLI-Erweiterung kombinieren."
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — Authorization-Code + PKCE für Claude-Provider",
+      "description": "Verkabelt Claude OAuth 2.0 Authorization-Code + PKCE (authorize_url, token_url, client_id, Claude-Scopes) für den Claude-Providertyp. Stellt nur das oauth-Feature bereit. Installieren Sie daneben die passende Provider-Typ-Erweiterung für Header, Tools und Client-Signatur. Endpunkte und Scopes liefert dieses JSON — der Gateway hartkodiert sie nicht.",
+      "ui": {
+        "help": "Claude OAuth 2.0 — Authorization-Code + PKCE für Claude-Provider. Endpunkte stammen aus dieser Erweiterung — keine hartkodierten Core-Origin-Adressen."
+      }
+    },
+    "vpn-support": {
+      "name": "VPN-Unterstützung",
+      "tagline": "VPN-Endpunkte aus Abonnements für die Provider Ihrer Wahl",
+      "description": "Fügen Sie VPN-Endpunkte zum Ausgangsatz der von Ihnen genannten Provider oder Pools hinzu. Fügen Sie ein Abonnement (oder eine Node-URI) ein, wählen Sie, wie viele IPs behalten und wie sie genutzt werden sollen — den Rest erledigt der Gateway: er lädt das Abonnement, parst jeden Endpunkt, prüft ihn, behält die besten und verwirft die, die nicht mehr antworten, und wiederholt dies im eingestellten Intervall, sodass abgelaufene Abonnements automatisch ersetzt werden. Jede Endpunktliste kann gleichzeitig an mehrere Provider oder Pools gebunden werden. Diese Erweiterung liefert nur eigene Runtime- und UI-Addons — für ihre Funktion ist kein Gateway-Code nötig.",
+      "ui": {
+        "help": "Abonnement einfügen, Anzahl zu behaltender IPs wählen, deren Platz in der Ausgangsrotation festlegen und die Provider oder Pools auflisten, für die sie gelten (kommagetrennt). Alles andere hat einen funktionierenden Standard.",
+        "fields": {
+          "subscriptions": {
+            "label": "Abonnements",
+            "description": "Pro Zeile: eine Abonnement-URL, eine Node-URI als solche oder ein reiner Token, wenn eine Abonnement-Basis-URL gesetzt ist."
+          },
+          "node_count": {
+            "label": "Zu behaltende IPs",
+            "description": "Wie viele geprüfte IPs behalten werden. 0 behält alle."
+          },
+          "egress_mode": {
+            "label": "Ausgangsmodus",
+            "description": "rotate — zusammen mit den eigenen Quelladressen des Providers. fallback — erst nach deren Fehler oder Rate-Limit. vpn_only — diese zuerst, Quelladressen zuletzt."
+          },
+          "apply_to": {
+            "label": "Provider und Pools",
+            "description": "Kommagetrennte Provider- oder Pool-Namen, z. B. opencode-zen, backup. * gilt überall."
+          },
+          "refresh_interval_minutes": {
+            "label": "Auto-Abruf-Intervall (Minuten)",
+            "description": "Wie oft Abonnements neu gelesen und IPs erneut geprüft werden, in Minuten. 0 deaktiviert es."
+          },
+          "node_order": {
+            "label": "Auswahlreihenfolge",
+            "description": "Sortiert die geprüften IPs nach Latenz: beste zuerst, schlechteste zuerst oder gemischt."
+          },
+          "quality_max_ms": {
+            "label": "Qualitätsschwelle (ms)",
+            "description": "IPs, die langsamer als dieser Wert sind, werden verworfen. 0 behält jede antwortende IP."
+          },
+          "local_socks_ports": {
+            "label": "Lokale SOCKS-Ports",
+            "description": "Kommagetrennte lokale Ports, auf denen Ihr Tunnel-Core lauscht. Ein Port = ein Ausgang; mehrere Ports erlauben dem Gateway, zwischen ihnen zu rotieren."
+          },
+          "core_kind": {
+            "label": "Tunnel-Core",
+            "description": "none: nur IP-Berichte, keine lokalen Ports erwartet. static: Sie starten den Core und ordnen jeden lokalen Port selbst einem Endpunkt zu. singbox: der Gateway schaltet den aktiven Endpunkt über die Clash-API des Cores."
+          },
+          "protocols": {
+            "label": "Protokolle",
+            "description": "Kommagetrennte Protokolle, die behalten werden, z. B. vless,vmess,ss,trojan."
+          },
+          "region_include": {
+            "label": "Zu behaltende Regionen",
+            "description": "Kommagetrennte Regions-/Namensfragmente. Leer behält alles."
+          },
+          "region_exclude": {
+            "label": "Zu entfernende Regionen",
+            "description": "Kommagetrennte Regions-/Namensfragmente, die ausgeschlossen werden."
+          },
+          "probe_count": {
+            "label": "Prüfproben",
+            "description": "Anzahl Verbindungsversuche pro IP; der Median wird verwendet."
+          },
+          "probe_timeout_ms": {
+            "label": "Prüf-Timeout (ms)",
+            "description": "Verbindungs-Timeout pro Probe. IPs, die nie antworten, werden entfernt."
+          },
+          "subscription_base_url": {
+            "label": "Abonnement-Basis-URL",
+            "description": "Optional. Ein reiner Token in der Abonnement-Zeile wird an diese URL angehängt, sodass die Liste nur den Token enthalten muss. Leer lassen, wenn jeder Eintrag bereits eine volle URL oder Node-URI ist."
+          },
+          "subscription_headers": {
+            "label": "Abonnement-Header",
+            "description": "Optionales JSON-Objekt mit HTTP-Headern für den Abonnement-Abruf, z. B. {\"Authorization\":\"Bearer …\"}."
+          },
+          "core_api_url": {
+            "label": "Core-HTTP-API",
+            "description": "Basis-URL der Steuerungs-API des Cores, z. B. http://127.0.0.1:9090."
+          },
+          "core_api_token": {
+            "label": "Core-API-Geheimnis",
+            "description": "Optionales Bearer-Token für die Steuerungs-API des Cores."
+          },
+          "core_group": {
+            "label": "Core-Selektorgruppe",
+            "description": "Proxy-Gruppe oder Outbound-Tag, auf dem der Endpunkt umgeschaltet wird."
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "VPN-Unterstützung"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "VPN-Unterstützung",
+            "blocks": {
+              "0": {
+                "text": "Status"
+              },
+              "3": {
+                "text": "Endpunkte"
+              },
+              "6": {
+                "text": "So funktioniert es"
+              },
+              "7": {
+                "items": [
+                  "Der Ausgangsmodus bestimmt, wo diese IPs stehen: mit den eigenen Quelladressen des Providers (rotate), dahinter (fallback) oder davor (vpn_only).",
+                  "Abonnements werden im Auto-Abruf-Intervall neu gelesen, sodass abgelaufene Endpunkte automatisch ersetzt werden.",
+                  "Die Einstellungen stehen unter Einstellungen → Erweiterungen → VPN-Unterstützung."
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Catppuccin-Mocha-Dashboard-Theme (dunkle und helle Varianten)",
+      "description": "Dashboard-Theme mit der Catppuccin-Mocha-Palette und einer passenden hellen Latte-Variante. Akzent-, Hintergrund-, Flächen-, Text- und Rahmenfarben sind editierbar.",
+      "ui": {
+        "help": "Wenden Sie diese Erweiterung an, um das Dashboard-Theme zu wechseln. Deaktivieren Sie sie, um zurückzukehren.",
+        "fields": {
+          "accent": {
+            "label": "Akzent"
+          },
+          "--bg": {
+            "label": "Hintergrund"
+          },
+          "--bg-surface": {
+            "label": "Fläche"
+          },
+          "--text": {
+            "label": "Text"
+          },
+          "--border": {
+            "label": "Rahmen"
+          },
+          "--radius-sm": {
+            "label": "Radius"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Catppuccin-Frappé-Dashboard-Theme (dunkle und helle Varianten)",
+      "description": "Dashboard-Theme mit der Catppuccin-Frappé-Palette und einer passenden hellen Latte-Variante. Akzent-, Hintergrund-, Flächen-, Text- und Rahmenfarben sind editierbar.",
+      "ui": {
+        "help": "Wenden Sie diese Erweiterung an, um das Dashboard-Theme zu wechseln. Deaktivieren Sie sie, um zurückzukehren.",
+        "fields": {
+          "accent": {
+            "label": "Akzent"
+          },
+          "--bg": {
+            "label": "Hintergrund"
+          },
+          "--bg-surface": {
+            "label": "Fläche"
+          },
+          "--text": {
+            "label": "Text"
+          },
+          "--border": {
+            "label": "Rahmen"
+          },
+          "--radius-sm": {
+            "label": "Radius"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Catppuccin-Macchiato-Dashboard-Theme (dunkle und helle Varianten)",
+      "description": "Dashboard-Theme mit der Catppuccin-Macchiato-Palette und einer passenden hellen Latte-Variante. Akzent-, Hintergrund-, Flächen-, Text- und Rahmenfarben sind editierbar.",
+      "ui": {
+        "help": "Wenden Sie diese Erweiterung an, um das Dashboard-Theme zu wechseln. Deaktivieren Sie sie, um zurückzukehren.",
+        "fields": {
+          "accent": {
+            "label": "Akzent"
+          },
+          "--bg": {
+            "label": "Hintergrund"
+          },
+          "--bg-surface": {
+            "label": "Fläche"
+          },
+          "--text": {
+            "label": "Text"
+          },
+          "--border": {
+            "label": "Rahmen"
+          },
+          "--radius-sm": {
+            "label": "Radius"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-ja",
+  "name": "日本語",
+  "tagline": "AuroraX 拡張の日本語パック",
+  "description": "言語パック: AuroraX Store カタログの拡張機能の名前・説明・ヘルプ・設定ラベル・ページを翻訳します。",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "ja",
+  "catalog": {
+    "opencode": {
+      "name": "OpenCode エミュレーション",
+      "tagline": "OpenCode エミュレーションプロファイル — プロバイダ型・ヘッダー・ツール",
+      "description": "オプションの CLI プロバイダ型を追加し、ツール型を注入して上流 CLI クライアントをエミュレートします（ヘッダーと完全なツールスキーマ）。無料プランと API キー付きの有料トラフィックの両方で動作します。無料プランには正確に 26 桁の 16 進文字セッションヘッダーが必要です。device-flow 認可は別拡張の opencode-oauth にあります。",
+      "ui": {
+        "help": "オプションのプロバイダ型・ヘッダー・ツールをインストールします。device-flow 認可が必要なら OpenCode OAuth を別途追加してください。"
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "オプションのプロバイダ型向け OAuth device-flow",
+      "description": "オプションのプロバイダ型の OAuth device-flow 配線（サーバー・client_id・検証ベース）。oauth 機能のみ提供します。プロバイダ型・ヘッダー・ツール・クライアント署名には opencode CLI 拡張を併せてインストールしてください。",
+      "ui": {
+        "help": "オプションのプロバイダ型に OAuth device-flow を配線します。ヘッダーとツールは含まれません — opencode CLI 拡張と組み合わせてください。"
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — Claude プロバイダ向け authorization-code + PKCE",
+      "description": "Claude プロバイダ型に Claude OAuth 2.0 authorization-code + PKCE（authorize_url・token_url・client_id・Claude スコープ）を配線します。oauth 機能のみ提供します。ヘッダー・ツール・クライアント署名には対応するプロバイダ型拡張を併せてインストールしてください。エンドポイントとスコープはこの JSON が供給し、ゲートウェイにハードコードはありません。",
+      "ui": {
+        "help": "Claude プロバイダ向け Claude OAuth 2.0 authorization-code + PKCE。エンドポイントはこの拡張から供給されます — コアオリジンのハードコードはありません。"
+      }
+    },
+    "vpn-support": {
+      "name": "VPN サポート",
+      "tagline": "選んだプロバイダ向けのサブスクリプション VPN エンドポイント",
+      "description": "記載したプロバイダまたはプールの出力セットに VPN エンドポイントを追加します。サブスクリプション（またはノード URI）を貼り付け、保持する IP 数と使用方法を選べば、あとはゲートウェイが行います。サブスクリプションを取得し、各エンドポイントを解析・検証し、最良を保持して応答しなくなったものを破棄し、設定された間隔で繰り返すため、期限切れサブスクリプションは自動的に更新されます。各エンドポイントリストは複数のプロバイダやプールに同時に割り当てられます。この拡張は自身のランタイムと UI アドオンのみを提供し、動作にゲートウェイコードは不要です。",
+      "ui": {
+        "help": "サブスクリプションを貼り付け、保持する IP 数を選び、出力ローテーションでの位置を決め、対象のプロバイダやプールをカンマ区切りで列挙してください。それ以外はすべて動作する既定値です。",
+        "fields": {
+          "subscriptions": {
+            "label": "サブスクリプション",
+            "description": "1 行に 1 件: サブスクリプション URL、ノード URI のまま、またはサブスクリプション基本 URL 設定時はトークンのみ。"
+          },
+          "node_count": {
+            "label": "保持する IP 数",
+            "description": "検証済み IP を何件保持するか。0 はすべて保持。"
+          },
+          "egress_mode": {
+            "label": "出口モード",
+            "description": "rotate — プロバイダ自身のソースアドレスと併用。fallback — 失敗または制限後にのみ。vpn_only — まずこれら、最後にソースアドレス。"
+          },
+          "apply_to": {
+            "label": "プロバイダとプール",
+            "description": "プロバイダ名またはプール名をカンマ区切りで（例: opencode-zen, backup）。* はすべてに適用。"
+          },
+          "refresh_interval_minutes": {
+            "label": "自動取得間隔（分）",
+            "description": "サブスクリプションの再読み込みと IP の再検証の間隔（分）。0 で無効。"
+          },
+          "node_order": {
+            "label": "選択順",
+            "description": "検証済み IP をレイテンシで並べ替え: 最良優先・最悪優先・ランダム。"
+          },
+          "quality_max_ms": {
+            "label": "品質しきい値（ms）",
+            "description": "この値より遅い IP は破棄。0 は応答するすべてを保持。"
+          },
+          "local_socks_ports": {
+            "label": "ローカル SOCKS ポート",
+            "description": "トンネルコアが待ち受けるローカルポートをカンマ区切りで。1 ポート = 1 出口、複数ポートでゲートウェイがローテーション。"
+          },
+          "core_kind": {
+            "label": "トンネルコア",
+            "description": "none: IP を報告するだけでローカルポートを待ちません。static: コアを自分で起動し各ローカルポートを自分でエンドポイントに割り当て。singbox: ゲートウェイがコアの Clash API 経由でアクティブなエンドポイントを切り替え。"
+          },
+          "protocols": {
+            "label": "プロトコル",
+            "description": "保持するプロトコルをカンマ区切りで（例: vless,vmess,ss,trojan）。"
+          },
+          "region_include": {
+            "label": "保持するリージョン",
+            "description": "リージョン名の部分文字列をカンマ区切りで。空ですべて保持。"
+          },
+          "region_exclude": {
+            "label": "除外するリージョン",
+            "description": "除外するリージョン名の部分文字列をカンマ区切りで。"
+          },
+          "probe_count": {
+            "label": "検証試行数",
+            "description": "IP ごとの接続試行回数。中央値を使用。"
+          },
+          "probe_timeout_ms": {
+            "label": "検証タイムアウト（ms）",
+            "description": "試行ごとの接続タイムアウト。応答しない IP は削除。"
+          },
+          "subscription_base_url": {
+            "label": "サブスクリプション基本 URL",
+            "description": "任意。サブスクリプション行のトークンがこの URL に付加されるため、リストにはトークンのみを置けます。各項目が既に完全な URL またはノード URI なら空のままに。"
+          },
+          "subscription_headers": {
+            "label": "サブスクリプションヘッダー",
+            "description": "サブスクリプション取得時に送信する HTTP ヘッダーの JSON オブジェクト（任意、例: {\"Authorization\":\"Bearer …\"}）。"
+          },
+          "core_api_url": {
+            "label": "コア HTTP API",
+            "description": "コア制御 API の基本 URL（例: http://127.0.0.1:9090）。"
+          },
+          "core_api_token": {
+            "label": "コア API シークレット",
+            "description": "コア制御 API 用の任意のベアラトークン。"
+          },
+          "core_group": {
+            "label": "コアセレクタグループ",
+            "description": "エンドポイントを切り替えるプロキシグループまたはアウトバウンドタグ。"
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "VPN サポート"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "VPN サポート",
+            "blocks": {
+              "0": {
+                "text": "ステータス"
+              },
+              "3": {
+                "text": "エンドポイント"
+              },
+              "6": {
+                "text": "仕組み"
+              },
+              "7": {
+                "items": [
+                  "出口モードはこれらの IP の位置を決めます: プロバイダのソースアドレスと併用（rotate）、その後ろ（fallback）、またはその前（vpn_only）。",
+                  "サブスクリプションは自動取得間隔で再読み込みされるため、期限切れエンドポイントは自動的に更新されます。",
+                  "設定は「設定 → 拡張機能 → VPN サポート」にあります。"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Catppuccin Mocha ダッシュボードテーマ（ダーク・ライト両版）",
+      "description": "Catppuccin Mocha パレットと対応するライト版 Latte によるダッシュボードテーマ。アクセント・背景・サーフェス・テキスト・境界線の色を編集できます。",
+      "ui": {
+        "help": "この拡張を適用するとダッシュボードテーマが変わります。無効にすると元に戻ります。",
+        "fields": {
+          "accent": {
+            "label": "アクセント"
+          },
+          "--bg": {
+            "label": "背景"
+          },
+          "--bg-surface": {
+            "label": "サーフェス"
+          },
+          "--text": {
+            "label": "テキスト"
+          },
+          "--border": {
+            "label": "境界線"
+          },
+          "--radius-sm": {
+            "label": "角丸"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Catppuccin Frappé ダッシュボードテーマ（ダーク・ライト両版）",
+      "description": "Catppuccin Frappé パレットと対応するライト版 Latte によるダッシュボードテーマ。アクセント・背景・サーフェス・テキスト・境界線の色を編集できます。",
+      "ui": {
+        "help": "この拡張を適用するとダッシュボードテーマが変わります。無効にすると元に戻ります。",
+        "fields": {
+          "accent": {
+            "label": "アクセント"
+          },
+          "--bg": {
+            "label": "背景"
+          },
+          "--bg-surface": {
+            "label": "サーフェス"
+          },
+          "--text": {
+            "label": "テキスト"
+          },
+          "--border": {
+            "label": "境界線"
+          },
+          "--radius-sm": {
+            "label": "角丸"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Catppuccin Macchiato ダッシュボードテーマ（ダーク・ライト両版）",
+      "description": "Catppuccin Macchiato パレットと対応するライト版 Latte によるダッシュボードテーマ。アクセント・背景・サーフェス・テキスト・境界線の色を編集できます。",
+      "ui": {
+        "help": "この拡張を適用するとダッシュボードテーマが変わります。無効にすると元に戻ります。",
+        "fields": {
+          "accent": {
+            "label": "アクセント"
+          },
+          "--bg": {
+            "label": "背景"
+          },
+          "--bg-surface": {
+            "label": "サーフェス"
+          },
+          "--text": {
+            "label": "テキスト"
+          },
+          "--border": {
+            "label": "境界線"
+          },
+          "--radius-sm": {
+            "label": "角丸"
+          }
+        }
+      }
+    }
+  }
+}

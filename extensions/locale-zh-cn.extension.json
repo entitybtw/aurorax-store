@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-zh-cn",
+  "name": "简体中文",
+  "tagline": "AuroraX 扩展简体中文语言包",
+  "description": "语言包：翻译 AuroraX Store 目录中扩展的名称、简介、帮助文本、设置标签与页面。",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "zh-cn",
+  "catalog": {
+    "opencode": {
+      "name": "OpenCode 模拟",
+      "tagline": "OpenCode 模拟配置 — 提供方类型、请求头、工具",
+      "description": "添加可选的 CLI 提供方类型，注入其工具类型并模拟上游 CLI 客户端（请求头与完整工具架构）。对免费套餐流量和带 API 密钥的付费流量均有效；免费套餐要求会话头恰好为 26 位十六进制字符。设备流授权位于独立扩展 opencode-oauth。",
+      "ui": {
+        "help": "安装可选的提供方类型、请求头和工具。如需设备流授权，请另行添加 OpenCode OAuth。"
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "可选提供方类型的 OAuth 设备流",
+      "description": "为可选提供方类型接入 OAuth 设备流（服务器、client_id、验证基础）。仅提供 oauth 功能。请同时安装 opencode CLI 扩展以获得提供方类型、请求头、工具和客户端签名。",
+      "ui": {
+        "help": "为可选提供方类型接入 OAuth 设备流。不含请求头与工具 — 请与 opencode CLI 扩展搭配使用。"
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — 面向 Claude 提供方的 authorization-code + PKCE",
+      "description": "为 Claude 提供方类型接入 Claude OAuth 2.0 authorization-code + PKCE（authorize_url、token_url、client_id、Claude 作用域）。仅提供 oauth 功能。请同时安装对应的提供方类型扩展以获得请求头、工具和客户端签名。端点与作用域由本 JSON 提供 — 网关不做硬编码。",
+      "ui": {
+        "help": "面向 Claude 提供方的 Claude OAuth 2.0 authorization-code + PKCE。端点来自本扩展 — 没有硬编码的核心源站。"
+      }
+    },
+    "vpn-support": {
+      "name": "VPN 支持",
+      "tagline": "为选定提供方提供的订阅 VPN 端点",
+      "description": "将 VPN 端点添加到你列出的提供方或池的出站集合。粘贴订阅（或节点 URI），选择保留多少 IP 以及如何使用，其余交给网关：获取订阅、解析每个端点、验证、保留最好的、丢弃不再响应的，并按设定间隔重复，因此过期订阅会自动更换。每个端点列表可同时绑定多个提供方或池。本扩展仅提供自身的运行时与 UI 附加组件 — 无需网关代码即可工作。",
+      "ui": {
+        "help": "粘贴订阅，选择保留多少 IP，决定它们在出站轮换中的位置，并列出适用的提供方或池（逗号分隔）。其余均使用可用的默认值。",
+        "fields": {
+          "subscriptions": {
+            "label": "订阅",
+            "description": "每行一个：订阅 URL、原样的节点 URI，或在设置了订阅基础 URL 时仅填令牌。"
+          },
+          "node_count": {
+            "label": "保留 IP 数",
+            "description": "保留多少个已验证的 IP。0 保留全部。"
+          },
+          "egress_mode": {
+            "label": "出站模式",
+            "description": "rotate — 与提供方自身源地址并用。fallback — 仅在其失败或限速之后。vpn_only — 先这些，最后源地址。"
+          },
+          "apply_to": {
+            "label": "提供方与池",
+            "description": "逗号分隔的提供方或池名称，如 opencode-zen, backup。* 表示全部。"
+          },
+          "refresh_interval_minutes": {
+            "label": "自动拉取间隔（分钟）",
+            "description": "重新读取订阅和重新验证 IP 的频率，以分钟计。0 关闭。"
+          },
+          "node_order": {
+            "label": "选择顺序",
+            "description": "按延迟排序已验证的 IP：最优优先、最差优先或随机。"
+          },
+          "quality_max_ms": {
+            "label": "质量阈值（ms）",
+            "description": "慢于此值的 IP 被丢弃。0 保留所有响应的 IP。"
+          },
+          "local_socks_ports": {
+            "label": "本地 SOCKS 端口",
+            "description": "隧道核心监听的本地端口，逗号分隔。一个端口 = 一个出站；多个端口让网关在之间轮换。"
+          },
+          "core_kind": {
+            "label": "隧道核心",
+            "description": "none：仅报告 IP，不期望本地端口。static：你自己启动核心并手动将每个本地端口映射到端点。singbox：网关通过核心的 Clash API 切换活动端点。"
+          },
+          "protocols": {
+            "label": "协议",
+            "description": "要保留的协议，逗号分隔，如 vless,vmess,ss,trojan。"
+          },
+          "region_include": {
+            "label": "保留地区",
+            "description": "地区名的包含片段，逗号分隔。留空保留全部。"
+          },
+          "region_exclude": {
+            "label": "排除地区",
+            "description": "要排除的地区名片段，逗号分隔。"
+          },
+          "probe_count": {
+            "label": "探测次数",
+            "description": "每个 IP 的连接尝试次数；取中位数。"
+          },
+          "probe_timeout_ms": {
+            "label": "探测超时（ms）",
+            "description": "每次尝试的连接超时。从未响应的 IP 被移除。"
+          },
+          "subscription_base_url": {
+            "label": "订阅基础 URL",
+            "description": "可选。订阅行中的裸令牌会附加到此 URL，因此列表中可只放令牌。如果每项已是完整 URL 或节点 URI，保持为空。"
+          },
+          "subscription_headers": {
+            "label": "订阅请求头",
+            "description": "获取订阅时发送的可选 HTTP 请求头 JSON 对象，如 {\"Authorization\":\"Bearer …\"}。"
+          },
+          "core_api_url": {
+            "label": "核心 HTTP API",
+            "description": "核心控制 API 的基础 URL，如 http://127.0.0.1:9090。"
+          },
+          "core_api_token": {
+            "label": "核心 API 密钥",
+            "description": "核心控制 API 的可选 Bearer 令牌。"
+          },
+          "core_group": {
+            "label": "核心选择器组",
+            "description": "端点在其上切换的代理组或出站标签。"
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "VPN 支持"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "VPN 支持",
+            "blocks": {
+              "0": {
+                "text": "状态"
+              },
+              "3": {
+                "text": "端点"
+              },
+              "6": {
+                "text": "工作原理"
+              },
+              "7": {
+                "items": [
+                  "出站模式决定这些 IP 的位置：与提供方自身源地址并用（rotate）、在其之后（fallback）或在其之前（vpn_only）。",
+                  "订阅会按自动拉取间隔重新读取，因此过期端点会自动更换。",
+                  "设置位于 设置 → 扩展 → VPN 支持。"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Catppuccin Mocha 仪表盘主题（深色与浅色变体）",
+      "description": "基于 Catppuccin Mocha 配色及配套浅色 Latte 变体的仪表盘主题。可编辑强调色、背景、表面、文字与边框颜色。",
+      "ui": {
+        "help": "应用此扩展以更换仪表盘主题。禁用即可恢复。",
+        "fields": {
+          "accent": {
+            "label": "强调色"
+          },
+          "--bg": {
+            "label": "背景"
+          },
+          "--bg-surface": {
+            "label": "表面"
+          },
+          "--text": {
+            "label": "文字"
+          },
+          "--border": {
+            "label": "边框"
+          },
+          "--radius-sm": {
+            "label": "圆角"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Catppuccin Frappé 仪表盘主题（深色与浅色变体）",
+      "description": "基于 Catppuccin Frappé 配色及配套浅色 Latte 变体的仪表盘主题。可编辑强调色、背景、表面、文字与边框颜色。",
+      "ui": {
+        "help": "应用此扩展以更换仪表盘主题。禁用即可恢复。",
+        "fields": {
+          "accent": {
+            "label": "强调色"
+          },
+          "--bg": {
+            "label": "背景"
+          },
+          "--bg-surface": {
+            "label": "表面"
+          },
+          "--text": {
+            "label": "文字"
+          },
+          "--border": {
+            "label": "边框"
+          },
+          "--radius-sm": {
+            "label": "圆角"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Catppuccin Macchiato 仪表盘主题（深色与浅色变体）",
+      "description": "基于 Catppuccin Macchiato 配色及配套浅色 Latte 变体的仪表盘主题。可编辑强调色、背景、表面、文字与边框颜色。",
+      "ui": {
+        "help": "应用此扩展以更换仪表盘主题。禁用即可恢复。",
+        "fields": {
+          "accent": {
+            "label": "强调色"
+          },
+          "--bg": {
+            "label": "背景"
+          },
+          "--bg-surface": {
+            "label": "表面"
+          },
+          "--text": {
+            "label": "文字"
+          },
+          "--border": {
+            "label": "边框"
+          },
+          "--radius-sm": {
+            "label": "圆角"
+          }
+        }
+      }
+    }
+  }
+}

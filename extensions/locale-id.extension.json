@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-id",
+  "name": "Bahasa Indonesia",
+  "tagline": "Ekstensi AuroraX dalam Bahasa Indonesia",
+  "description": "Paket bahasa: menerjemahkan nama, deskripsi, teks bantuan, label pengaturan, dan halaman ekstensi di katalog AuroraX Store.",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "id",
+  "catalog": {
+    "opencode": {
+      "name": "Emulasi OpenCode",
+      "tagline": "Profil emulasi OpenCode — jenis penyedia, header, alat",
+      "description": "Menambahkan jenis penyedia CLI opsional, menyuntikkan jenis alatnya, dan meniru klien CLI hulu (header serta skema alat lengkap). Berfungsi untuk trafik paket gratis dan berbayar dengan kunci API; paket gratis memerlukan header sesi dengan tepat 26 karakter heksadesimal. Otorisasi device-flow berada di ekstensi terpisah opencode-oauth.",
+      "ui": {
+        "help": "Memasang jenis penyedia opsional, header, dan alat. Tambahkan OpenCode OAuth secara terpisah jika Anda perlu otorisasi device-flow."
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "OAuth device-flow untuk jenis penyedia opsional",
+      "description": "Pengkabelan OAuth device-flow (server, client_id, basis verifikasi) untuk jenis penyedia opsional. Hanya menyediakan fitur oauth. Pasang juga ekstensi opencode CLI untuk jenis penyedia, header, alat, dan tanda tangan klien.",
+      "ui": {
+        "help": "Mengkabelkan OAuth device-flow untuk jenis penyedia opsional. Tanpa header atau alat — gabungkan dengan ekstensi opencode CLI."
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — authorization-code + PKCE untuk penyedia Claude",
+      "description": "Mengkabelkan Claude OAuth 2.0 authorization-code + PKCE (authorize_url, token_url, client_id, cakupan Claude) untuk jenis penyedia Claude. Hanya menyediakan fitur oauth. Pasang juga ekstensi jenis penyedia yang sesuai untuk header, alat, dan tanda tangan klien. Titik ujung dan cakupan disediakan JSON ini — gateway tidak menyimpannya secara hardcode.",
+      "ui": {
+        "help": "Claude OAuth 2.0 — authorization-code + PKCE untuk penyedia Claude. Titik ujung berasal dari ekstensi ini — tanpa origin inti hardcode."
+      }
+    },
+    "vpn-support": {
+      "name": "Dukungan VPN",
+      "tagline": "Titik ujung VPN berlangganan untuk penyedia pilihan Anda",
+      "description": "Tambahkan titik ujung VPN ke set keluaran penyedia atau pool yang Anda sebutkan. Tempelkan langganan (atau URI node), pilih berapa IP yang disimpan dan cara memakainya, lalu gateway yang mengerjakan sisanya: mengunduh langganan, mengurai setiap titik ujung, mengujinya, menyimpan yang terbaik dan membuang yang tidak lagi merespons, lalu mengulanginya pada interval yang ditetapkan sehingga langganan kedaluwarsa diganti otomatis. Setiap daftar titik ujung dapat ditautkan ke beberapa penyedia atau pool sekaligus. Ekstensi ini hanya menyediakan add-on runtime dan UI-nya sendiri — tanpa kode gateway untuk berfungsi.",
+      "ui": {
+        "help": "Tempelkan langganan, pilih berapa IP yang disimpan, tentukan tempatnya dalam rotasi keluaran, dan sebutkan penyedia atau pool yang berlaku (dipisahkan koma). Sisanya sudah datang dengan default yang berfungsi.",
+        "fields": {
+          "subscriptions": {
+            "label": "Langganan",
+            "description": "Satu per baris: URL langganan, URI node apa adanya, atau hanya token jika URL dasar langganan disetel."
+          },
+          "node_count": {
+            "label": "Jumlah IP disimpan",
+            "description": "Berapa IP teruji yang disimpan. 0 menyimpan semua."
+          },
+          "egress_mode": {
+            "label": "Mode keluaran",
+            "description": "rotate — bersama alamat sumber milik penyedia. fallback — hanya setelah gagal atau kena batas. vpn_only — ini dulu, alamat sumber terakhir."
+          },
+          "apply_to": {
+            "label": "Penyedia dan pool",
+            "description": "Nama penyedia atau pool dipisahkan koma, mis. opencode-zen, backup. * berlaku di mana pun."
+          },
+          "refresh_interval_minutes": {
+            "label": "Interval ambil otomatis (menit)",
+            "description": "Seberapa sering langganan dibaca ulang dan IP diuji ulang, dalam menit. 0 mematikan."
+          },
+          "node_order": {
+            "label": "Urutan pemilihan",
+            "description": "Mengurutkan IP teruji berdasarkan latensi: terbaik dulu, terburuk dulu, atau acak."
+          },
+          "quality_max_ms": {
+            "label": "Ambang kualitas (ms)",
+            "description": "IP yang lebih lambat dari nilai ini dibuang. 0 menyimpan semua IP yang merespons."
+          },
+          "local_socks_ports": {
+            "label": "Port SOCKS lokal",
+            "description": "Port lokal yang didengarkan tunnel core, dipisahkan koma. Satu port = satu keluaran; beberapa port memungkinkan gateway berputar di antaranya."
+          },
+          "core_kind": {
+            "label": "Tunnel core",
+            "description": "none: hanya melaporkan IP, tidak menunggu port lokal. static: Anda menjalankan core sendiri dan memetakan setiap port lokal ke titik ujung sendiri. singbox: gateway mengalihkan titik ujung aktif melalui Clash API core."
+          },
+          "protocols": {
+            "label": "Protokol",
+            "description": "Protokol yang disimpan, dipisahkan koma, mis. vless,vmess,ss,trojan."
+          },
+          "region_include": {
+            "label": "Wilayah disimpan",
+            "description": "Potongan nama wilayah dipisahkan koma. Kosong menyimpan semua."
+          },
+          "region_exclude": {
+            "label": "Wilayah dikecualikan",
+            "description": "Potongan nama wilayah untuk dikecualikan, dipisahkan koma."
+          },
+          "probe_count": {
+            "label": "Sampel pengujian",
+            "description": "Jumlah percobaan koneksi per IP; median digunakan."
+          },
+          "probe_timeout_ms": {
+            "label": "Batas waktu pengujian (ms)",
+            "description": "Batas waktu koneksi per percobaan. IP yang tidak pernah merespons dihapus."
+          },
+          "subscription_base_url": {
+            "label": "URL dasar langganan",
+            "description": "Opsional. Token mentah dari baris Langganan ditambahkan ke URL ini, sehingga daftar hanya boleh berisi token. Biarkan kosong jika setiap item sudah URL lengkap atau URI node."
+          },
+          "subscription_headers": {
+            "label": "Header langganan",
+            "description": "Objek JSON header HTTP opsional yang dikirim saat mengambil langganan, mis. {\"Authorization\":\"Bearer …\"}."
+          },
+          "core_api_url": {
+            "label": "HTTP API core",
+            "description": "URL dasar API kontrol core, mis. http://127.0.0.1:9090."
+          },
+          "core_api_token": {
+            "label": "Rahasia API core",
+            "description": "Token bearer opsional untuk API kontrol core."
+          },
+          "core_group": {
+            "label": "Grup pemilih core",
+            "description": "Grup proxy atau tag keluaran tempat titik ujung beralih."
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "Dukungan VPN"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "Dukungan VPN",
+            "blocks": {
+              "0": {
+                "text": "Status"
+              },
+              "3": {
+                "text": "Titik ujung"
+              },
+              "6": {
+                "text": "Cara kerja"
+              },
+              "7": {
+                "items": [
+                  "Mode keluaran menentukan tempat IP ini: bersama alamat sumber milik penyedia (rotate), di belakangnya (fallback), atau di depannya (vpn_only).",
+                  "Langganan dibaca ulang pada interval ambil otomatis, sehingga titik ujung kedaluwarsa diganti otomatis.",
+                  "Pengaturan ada di Pengaturan → Ekstensi → Dukungan VPN."
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Tema dasbor Catppuccin Mocha (varian gelap dan terang)",
+      "description": "Tema dasbor berbasis palet Catppuccin Mocha dengan varian terang Latte yang serasi. Warna aksen, latar, permukaan, teks, dan bingkai dapat diedit.",
+      "ui": {
+        "help": "Terapkan ekstensi ini untuk mengganti tema dasbor. Nonaktifkan untuk kembali.",
+        "fields": {
+          "accent": {
+            "label": "Aksen"
+          },
+          "--bg": {
+            "label": "Latar"
+          },
+          "--bg-surface": {
+            "label": "Permukaan"
+          },
+          "--text": {
+            "label": "Teks"
+          },
+          "--border": {
+            "label": "Bingkai"
+          },
+          "--radius-sm": {
+            "label": "Radius"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Tema dasbor Catppuccin Frappé (varian gelap dan terang)",
+      "description": "Tema dasbor berbasis palet Catppuccin Frappé dengan varian terang Latte yang serasi. Warna aksen, latar, permukaan, teks, dan bingkai dapat diedit.",
+      "ui": {
+        "help": "Terapkan ekstensi ini untuk mengganti tema dasbor. Nonaktifkan untuk kembali.",
+        "fields": {
+          "accent": {
+            "label": "Aksen"
+          },
+          "--bg": {
+            "label": "Latar"
+          },
+          "--bg-surface": {
+            "label": "Permukaan"
+          },
+          "--text": {
+            "label": "Teks"
+          },
+          "--border": {
+            "label": "Bingkai"
+          },
+          "--radius-sm": {
+            "label": "Radius"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Tema dasbor Catppuccin Macchiato (varian gelap dan terang)",
+      "description": "Tema dasbor berbasis palet Catppuccin Macchiato dengan varian terang Latte yang serasi. Warna aksen, latar, permukaan, teks, dan bingkai dapat diedit.",
+      "ui": {
+        "help": "Terapkan ekstensi ini untuk mengganti tema dasbor. Nonaktifkan untuk kembali.",
+        "fields": {
+          "accent": {
+            "label": "Aksen"
+          },
+          "--bg": {
+            "label": "Latar"
+          },
+          "--bg-surface": {
+            "label": "Permukaan"
+          },
+          "--text": {
+            "label": "Teks"
+          },
+          "--border": {
+            "label": "Bingkai"
+          },
+          "--radius-sm": {
+            "label": "Radius"
+          }
+        }
+      }
+    }
+  }
+}

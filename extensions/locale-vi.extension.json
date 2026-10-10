@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-vi",
+  "name": "Tiếng Việt",
+  "tagline": "Tiện ích AuroraX bằng tiếng Việt",
+  "description": "Gói ngôn ngữ: dịch tên, mô tả, văn bản trợ giúp, nhãn cài đặt và trang của các tiện ích trong danh mục AuroraX Store.",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "vi",
+  "catalog": {
+    "opencode": {
+      "name": "Mô phỏng OpenCode",
+      "tagline": "Hồ sơ mô phỏng OpenCode — loại nhà cung cấp, header, công cụ",
+      "description": "Thêm loại nhà cung cấp CLI tùy chọn, tiêm loại công cụ của nó và mô phỏng client CLI phía upstream (header và lược đồ công cụ đầy đủ). Hoạt động cho lưu lượng gói miễn phí và trả phí với khoá API; gói miễn phí yêu cầu header phiên đúng 26 ký tự hex. Ủy quyền device-flow nằm trong tiện ích riêng opencode-oauth.",
+      "ui": {
+        "help": "Cài loại nhà cung cấp tùy chọn, header và công cụ. Thêm OpenCode OAuth riêng nếu bạn cần ủy quyền device-flow."
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "OAuth device-flow cho loại nhà cung cấp tùy chọn",
+      "description": "Dây nối OAuth device-flow (máy chủ, client_id, cơ sở xác minh) cho loại nhà cung cấp tùy chọn. Chỉ cung cấp tính năng oauth. Cài cùng tiện ích opencode CLI cho loại nhà cung cấp, header, công cụ và chữ ký client.",
+      "ui": {
+        "help": "Dây nối OAuth device-flow cho loại nhà cung cấp tùy chọn. Không có header hay công cụ — ghép với tiện ích opencode CLI."
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — authorization-code + PKCE cho nhà cung cấp Claude",
+      "description": "Dây nối Claude OAuth 2.0 authorization-code + PKCE (authorize_url, token_url, client_id, phạm vi Claude) cho loại nhà cung cấp Claude. Chỉ cung cấp tính năng oauth. Cài cùng tiện ích loại nhà cung cấp tương ứng cho header, công cụ và chữ ký client. Điểm cuối và phạm vi do JSON này cung cấp — gateway không hardcode.",
+      "ui": {
+        "help": "Claude OAuth 2.0 — authorization-code + PKCE cho nhà cung cấp Claude. Điểm cuối đến từ tiện ích này — không hardcode origin lõi."
+      }
+    },
+    "vpn-support": {
+      "name": "Hỗ trợ VPN",
+      "tagline": "Điểm cuối VPN từ đăng ký cho các nhà cung cấp bạn chọn",
+      "description": "Thêm điểm cuối VPN vào tập xuất ra của các nhà cung cấp hoặc pool bạn nêu. Dán đăng ký (hoặc URI nút), chọn giữ bao nhiêu IP và dùng thế nào, phần còn lại gateway lo: tải đăng ký, phân tích từng điểm cuối, kiểm tra, giữ tốt nhất và bỏ những cái không còn phản hồi, rồi lặp theo khoảng đã cấu hình nên đăng ký hết hạn tự động thay thế. Mỗi danh sách điểm cuối có thể gắn đồng thời cho nhiều nhà cung cấp hoặc pool. Tiện ích này chỉ cung cấp addon runtime và UI của riêng nó — không cần mã gateway để hoạt động.",
+      "ui": {
+        "help": "Dán đăng ký, chọn giữ bao nhiêu IP, định vị trí của chúng trong vòng xoáy xuất ra, và liệt kê các nhà cung cấp hoặc pool áp dụng (phân tách bằng dấu phẩy). Phần còn lại dùng mặc định đã hoạt động.",
+        "fields": {
+          "subscriptions": {
+            "label": "Đăng ký",
+            "description": "Mỗi dòng một cái: URL đăng ký, URI nút nguyên trạng, hoặc chỉ mã thông báo nếu đã đặt URL gốc đăng ký."
+          },
+          "node_count": {
+            "label": "Số IP giữ lại",
+            "description": "Giữ bao nhiêu IP đã kiểm chứng. 0 giữ tất cả."
+          },
+          "egress_mode": {
+            "label": "Chế độ xuất ra",
+            "description": "rotate — cùng địa chỉ nguồn của nhà cung cấp. fallback — chỉ sau khi chúng hỏng hoặc chạm giới hạn. vpn_only — cái này trước, địa chỉ nguồn cuối."
+          },
+          "apply_to": {
+            "label": "Nhà cung cấp và pool",
+            "description": "Tên nhà cung cấp hoặc pool phân tách bằng phẩy, vd opencode-zen, backup. * áp dụng mọi nơi."
+          },
+          "refresh_interval_minutes": {
+            "label": "Khoảng tự động kéo (phút)",
+            "description": "Tần suất đọc lại đăng ký và kiểm tra lại IP, tính bằng phút. 0 để tắt."
+          },
+          "node_order": {
+            "label": "Thứ tự chọn",
+            "description": "Sắp IP đã kiểm chứng theo độ trễ: tốt nhất trước, xấu nhất trước hoặc ngẫu nhiên."
+          },
+          "quality_max_ms": {
+            "label": "Ngưỡng chất lượng (ms)",
+            "description": "IP chậm hơn giá trị này bị loại. 0 giữ mọi IP phản hồi."
+          },
+          "local_socks_ports": {
+            "label": "Cổng SOCKS cục bộ",
+            "description": "Cổng cục bộ mà lõi hầm nghe, phân tách bằng phẩy. Một cổng = một đường ra; nhiều cổng cho phép gateway xoay giữa chúng."
+          },
+          "core_kind": {
+            "label": "Lõi hầm",
+            "description": "none: chỉ báo cáo IP, không chờ cổng cục bộ. static: bạn tự chạy lõi và tự gán mỗi cổng cục bộ cho điểm cuối. singbox: gateway chuyển điểm cuối đang hoạt động qua Clash API của lõi."
+          },
+          "protocols": {
+            "label": "Giao thức",
+            "description": "Giao thức giữ lại, phân tách bằng phẩy, vd vless,vmess,ss,trojan."
+          },
+          "region_include": {
+            "label": "Khu vực giữ lại",
+            "description": "Mảnh tên khu vực phân tách bằng phẩy. Để trống giữ tất cả."
+          },
+          "region_exclude": {
+            "label": "Khu vực loại",
+            "description": "Mảnh tên khu vực cần loại, phân tách bằng phẩy."
+          },
+          "probe_count": {
+            "label": "Mẫu dò",
+            "description": "Số lần thử kết nối mỗi IP; dùng trung vị."
+          },
+          "probe_timeout_ms": {
+            "label": "Thời gian chờ dò (ms)",
+            "description": "Thời gian kết nối mỗi lần thử. IP không bao giờ phản hồi sẽ bị xoá."
+          },
+          "subscription_base_url": {
+            "label": "URL gốc đăng ký",
+            "description": "Tùy chọn. Mã thông báo dòng Đăng ký sẽ nối vào URL này nên danh sách chỉ cần chứa mã thông báo. Để trống nếu mỗi mục đã là URL đầy đủ hoặc URI nút."
+          },
+          "subscription_headers": {
+            "label": "Header đăng ký",
+            "description": "Đối tượng JSON tùy chọn cho HTTP header khi lấy đăng ký, vd {\"Authorization\":\"Bearer …\"}."
+          },
+          "core_api_url": {
+            "label": "HTTP API lõi",
+            "description": "URL gốc của API điều khiển lõi, vd http://127.0.0.1:9090."
+          },
+          "core_api_token": {
+            "label": "Bí mật API lõi",
+            "description": "Mã thông báo bearer tùy chọn cho API điều khiển lõi."
+          },
+          "core_group": {
+            "label": "Nhóm chọn lõi",
+            "description": "Nhóm proxy hoặc nhãn xuất ra mà điểm cuối được chuyển sang."
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "Hỗ trợ VPN"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "Hỗ trợ VPN",
+            "blocks": {
+              "0": {
+                "text": "Trạng thái"
+              },
+              "3": {
+                "text": "Điểm cuối"
+              },
+              "6": {
+                "text": "Cách hoạt động"
+              },
+              "7": {
+                "items": [
+                  "Chế độ xuất ra quyết định những IP này nằm ở đâu: cùng địa chỉ nguồn của nhà cung cấp (rotate), sau chúng (fallback), hoặc trước chúng (vpn_only).",
+                  "Đăng ký được đọc lại theo khoảng tự động kéo nên điểm cuối hết hạn tự động được thay thế.",
+                  "Cài đặt ở Cài đặt → Tiện ích → Hỗ trợ VPN."
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Chủ đề bảng điều khiển Catppuccin Mocha (biến thể tối và sáng)",
+      "description": "Chủ đề bảng điều khiển dựa trên bảng màu Catppuccin Mocha với biến thể Latte sáng tương ứng. Có thể sửa màu nhấn, nền, bề mặt, chữ và viền.",
+      "ui": {
+        "help": "Áp dụng tiện ích này để đổi chủ đề bảng điều khiển. Tắt để trở lại.",
+        "fields": {
+          "accent": {
+            "label": "Nhấn"
+          },
+          "--bg": {
+            "label": "Nền"
+          },
+          "--bg-surface": {
+            "label": "Bề mặt"
+          },
+          "--text": {
+            "label": "Chữ"
+          },
+          "--border": {
+            "label": "Viền"
+          },
+          "--radius-sm": {
+            "label": "Bán kính"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Chủ đề bảng điều khiển Catppuccin Frappé (biến thể tối và sáng)",
+      "description": "Chủ đề bảng điều khiển dựa trên bảng màu Catppuccin Frappé với biến thể Latte sáng tương ứng. Có thể sửa màu nhấn, nền, bề mặt, chữ và viền.",
+      "ui": {
+        "help": "Áp dụng tiện ích này để đổi chủ đề bảng điều khiển. Tắt để trở lại.",
+        "fields": {
+          "accent": {
+            "label": "Nhấn"
+          },
+          "--bg": {
+            "label": "Nền"
+          },
+          "--bg-surface": {
+            "label": "Bề mặt"
+          },
+          "--text": {
+            "label": "Chữ"
+          },
+          "--border": {
+            "label": "Viền"
+          },
+          "--radius-sm": {
+            "label": "Bán kính"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Chủ đề bảng điều khiển Catppuccin Macchiato (biến thể tối và sáng)",
+      "description": "Chủ đề bảng điều khiển dựa trên bảng màu Catppuccin Macchiato với biến thể Latte sáng tương ứng. Có thể sửa màu nhấn, nền, bề mặt, chữ và viền.",
+      "ui": {
+        "help": "Áp dụng tiện ích này để đổi chủ đề bảng điều khiển. Tắt để trở lại.",
+        "fields": {
+          "accent": {
+            "label": "Nhấn"
+          },
+          "--bg": {
+            "label": "Nền"
+          },
+          "--bg-surface": {
+            "label": "Bề mặt"
+          },
+          "--text": {
+            "label": "Chữ"
+          },
+          "--border": {
+            "label": "Viền"
+          },
+          "--radius-sm": {
+            "label": "Bán kính"
+          }
+        }
+      }
+    }
+  }
+}

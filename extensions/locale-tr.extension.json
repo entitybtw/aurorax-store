@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-tr",
+  "name": "Türkçe",
+  "tagline": "AuroraX uzantıları Türkçe",
+  "description": "Dil paketi: AuroraX Store kataloğundaki uzantıların adlarını, açıklamalarını, yardım metinlerini, ayar etiketlerini ve sayfalarını çevirir.",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "tr",
+  "catalog": {
+    "opencode": {
+      "name": "OpenCode Öykünmesi",
+      "tagline": "OpenCode öykünme profili — sağlayıcı türü, başlıklar, araçlar",
+      "description": "İsteğe bağlı CLI sağlayıcı türünü ekler, araç türlerini enjekte eder ve yukarı akış CLI istemcisini öykünür (başlıklar ve eksiksiz araç şeması). Hem ücretsiz tarifli hem de API anahtarlı ücretli trafikte çalışır; ücretsiz tarif, oturum başlığının tam olarak 26 onaltılık karakter olmasını gerektirir. Device-flow yetkilendirmesi ayrı opencode-oauth uzantısındadır.",
+      "ui": {
+        "help": "İsteğe bağlı sağlayıcı türünü, başlıkları ve araçları kurar. Device-flow yetkilendirmesi gerekiyorsa OpenCode OAuth'u ayrı ekleyin."
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "İsteğe bağlı sağlayıcı türü için OAuth device-flow",
+      "description": "İsteğe bağlı sağlayıcı türü için OAuth device-flow kablolaması (sunucu, client_id, doğrulama tabanı). Yalnızca oauth özelliğini sağlar. Sağlayıcı türü, başlıklar, araçlar ve istemci imzası için yanına opencode CLI uzantısını kurun.",
+      "ui": {
+        "help": "İsteğe bağlı sağlayıcı türü için OAuth device-flow bağlar. Başlık veya araç yok — opencode CLI uzantısıyla birleştirin."
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — authorization-code + PKCE (Claude sağlayıcıları için)",
+      "description": "Claude sağlayıcı türü için Claude OAuth 2.0 authorization-code + PKCE (authorize_url, token_url, client_id, Claude kapsamları) bağlar. Yalnızca oauth özelliğini sağlar. Başlıklar, araçlar ve istemci imzası için yanına uygun sağlayıcı türü uzantısını kurun. Uç noktalar ve kapsamlar bu JSON tarafından sağlanır — ağ geçidi bunları koduna gömmez.",
+      "ui": {
+        "help": "Claude sağlayıcıları için Claude OAuth 2.0 authorization-code + PKCE. Uç noktalar bu uzantıdan gelir — hiçbir çekirdek kökü kodda sabitlenmemiştir."
+      }
+    },
+    "vpn-support": {
+      "name": "VPN Desteği",
+      "tagline": "Seçtiğiniz sağlayıcılar için abonelik VPN uç noktaları",
+      "description": "Belirttiğiniz sağlayıcıların veya havuzların çıkış kümesine VPN uç noktaları ekleyin. Bir aboneme yapıştırın (veya bir düğüm URI'si), kaç IP tutulacağını ve nasıl kullanılacağını seçin; gerisini ağ geçidi halleder: abonemeyi indirir, her uç noktayı ayrıştırır, yoklar, en iyileri tutar, cevap vermeyenleri atar ve yapılandırılan aralıkta tekrarlar; böylece süresi dolan abonemeler otomatik yenilenir. Her uç nokta listesi aynı anda birden fazla sağlayıcıya veya havuza bağlanabilir. Bu uzantı yalnızca kendi çalışma zamanı ve UI eklentilerini sunar — çalışması için ağ geçidi kodu gerekmez.",
+      "ui": {
+        "help": "Bir aboneme yapıştırın, kaç IP tutacağınızı seçin, çıkış rotasyonundaki yerlerini belirleyin ve uygulandıkları sağlayıcıları veya havuzları virgülle ayırarak listeleyin. Geri kalanın hepsi çalışan bir varsayılanla gelir.",
+        "fields": {
+          "subscriptions": {
+            "label": "Abonemeler",
+            "description": "Satır başına bir tane: bir aboneme URL'si, olduğu gibi bir düğüm URI'si ya da aboneme taban URL'si ayarlıysa çıplak bir jeton."
+          },
+          "node_count": {
+            "label": "Tutulacak IP sayısı",
+            "description": "Kaç sınamalı IP tutulacak. 0 hepsini tutar."
+          },
+          "egress_mode": {
+            "label": "Çıkış modu",
+            "description": "rotate — sağlayıcının kendi kaynak adresleriyle. fallback — yalnızca bunlar başarısız olur veya limite takılırsa. vpn_only — önce bunlar, en son kaynak adresleri."
+          },
+          "apply_to": {
+            "label": "Sağlayıcılar ve havuzlar",
+            "description": "Virgülle ayrılmış sağlayıcı veya havuz adları, örn. opencode-zen, backup. * her yerde uygulanır."
+          },
+          "refresh_interval_minutes": {
+            "label": "Otomatik çekme aralığı (dakika)",
+            "description": "Abonemelerin ne sıklıkla yeniden okunacağını ve IP'lerin yeniden yoklanacağını dakika cinsinden. 0 kapatır."
+          },
+          "node_order": {
+            "label": "Seçim sırası",
+            "description": "Sınamalı IP'leri gecikmeye göre sıralar: en iyi önce, en kötü önce veya karışık."
+          },
+          "quality_max_ms": {
+            "label": "Kalite eşiği (ms)",
+            "description": "Bu değerden yavaş IP'ler atılır. 0 cevap veren her IP'yi tutar."
+          },
+          "local_socks_ports": {
+            "label": "Yerel SOCKS portları",
+            "description": "Tünel çekirdeğinin dinlediği yerel portlar, virgülle ayrılmış. Bir port = bir çıkış; birden fazla port ağ geçidinin aralarında dönmesine izin verir."
+          },
+          "core_kind": {
+            "label": "Tünel çekirdeği",
+            "description": "none: yalnızca IP raporlar, yerel port beklenmez. static: çekirdeği siz başlatır ve her yerel portu bir uç noktaya kendiniz eşlersiniz. singbox: ağ geçidi aktif uç noktayı çekirdeğin Clash API üzerinden değiştirir."
+          },
+          "protocols": {
+            "label": "Protokoller",
+            "description": "Tutulacak protokoller, virgülle ayrılmış, örn. vless,vmess,ss,trojan."
+          },
+          "region_include": {
+            "label": "Tutulacak bölgeler",
+            "description": "Virgülle ayrılmış bölge/ad parçaları. Boş hepsini tutar."
+          },
+          "region_exclude": {
+            "label": "Atılacak bölgeler",
+            "description": "Hariç tutulacak virgülle ayrılmış bölge/ad parçaları."
+          },
+          "probe_count": {
+            "label": "Yoklama örneği",
+            "description": "IP başına bağlantı deneme sayısı; medyan kullanılır."
+          },
+          "probe_timeout_ms": {
+            "label": "Yoklama zaman aşımı (ms)",
+            "description": "Örnek başına bağlantı zaman aşımı. Asla cevap vermeyen IP'ler kaldırılır."
+          },
+          "subscription_base_url": {
+            "label": "Aboneme taban URL'si",
+            "description": "İsteğe bağlı. Abonemeler satırındaki çıplak jeton bu URL'ye eklenir, böylece listede yalnızca jeton bulunabilir. Her kayıt zaten tam bir URL veya düğüm URI'siysa boş bırakın."
+          },
+          "subscription_headers": {
+            "label": "Aboneme başlıkları",
+            "description": "İsteğe bağlı, aboneme alınırken gönderilen HTTP başlıklarının JSON nesnesi, örn. {\"Authorization\":\"Bearer …\"}."
+          },
+          "core_api_url": {
+            "label": "Çekirdek HTTP API'si",
+            "description": "Çekirdeğin denetim API'sinin taban URL'si, örn. http://127.0.0.1:9090."
+          },
+          "core_api_token": {
+            "label": "Çekirdek API sırrı",
+            "description": "Çekirdeğin denetim API'si için isteğe bağlı bearer jetonu."
+          },
+          "core_group": {
+            "label": "Çekirdek seçici grubu",
+            "description": "Uç noktanın anahtarlandığı proxy grubu veya çıkış etiketi."
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "VPN Desteği"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "VPN Desteği",
+            "blocks": {
+              "0": {
+                "text": "Durum"
+              },
+              "3": {
+                "text": "Uç noktalar"
+              },
+              "6": {
+                "text": "Nasıl çalışır"
+              },
+              "7": {
+                "items": [
+                  "Çıkış modu bu IP'lerin yerini belirler: sağlayıcının kendi kaynak adresleriyle (rotate), bunların arkasında (fallback) veya önünde (vpn_only).",
+                  "Abonemeler otomatik çekme aralığında yeniden okunur, süresi dolan uç noktalar otomatik yenilenir.",
+                  "Ayarlar Ayarlar → Uzantılar → VPN Desteği bölümündedir."
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Catppuccin Mocha panel teması (koyu + açık varyantlar)",
+      "description": "Catppuccin Mocha paletini ve eşleşen açık Latte varyantını kullanan panel teması. Vurgu, arka plan, yüzey, metin ve kenarlık renklere düzenlenebilir.",
+      "ui": {
+        "help": "Panel temasını değiştirmek için bu uzantıyı uygulayın. Geri dönmek için devre dışı bırakın.",
+        "fields": {
+          "accent": {
+            "label": "Vurgu"
+          },
+          "--bg": {
+            "label": "Arka plan"
+          },
+          "--bg-surface": {
+            "label": "Yüzey"
+          },
+          "--text": {
+            "label": "Metin"
+          },
+          "--border": {
+            "label": "Kenarlık"
+          },
+          "--radius-sm": {
+            "label": "Köşe yarıçapı"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Catppuccin Frappé panel teması (koyu + açık varyantlar)",
+      "description": "Catppuccin Frappé paletini ve eşleşen açık Latte varyantını kullanan panel teması. Vurgu, arka plan, yüzey, metin ve kenarlık renklere düzenlenebilir.",
+      "ui": {
+        "help": "Panel temasını değiştirmek için bu uzantıyı uygulayın. Geri dönmek için devre dışı bırakın.",
+        "fields": {
+          "accent": {
+            "label": "Vurgu"
+          },
+          "--bg": {
+            "label": "Arka plan"
+          },
+          "--bg-surface": {
+            "label": "Yüzey"
+          },
+          "--text": {
+            "label": "Metin"
+          },
+          "--border": {
+            "label": "Kenarlık"
+          },
+          "--radius-sm": {
+            "label": "Köşe yarıçapı"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Catppuccin Macchiato panel teması (koyu + açık varyantlar)",
+      "description": "Catppuccin Macchiato paletini ve eşleşen açık Latte varyantını kullanan panel teması. Vurgu, arka plan, yüzey, metin ve kenarlık renklere düzenlenebilir.",
+      "ui": {
+        "help": "Panel temasını değiştirmek için bu uzantıyı uygulayın. Geri dönmek için devre dışı bırakın.",
+        "fields": {
+          "accent": {
+            "label": "Vurgu"
+          },
+          "--bg": {
+            "label": "Arka plan"
+          },
+          "--bg-surface": {
+            "label": "Yüzey"
+          },
+          "--text": {
+            "label": "Metin"
+          },
+          "--border": {
+            "label": "Kenarlık"
+          },
+          "--radius-sm": {
+            "label": "Köşe yarıçapı"
+          }
+        }
+      }
+    }
+  }
+}

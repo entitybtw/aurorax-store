@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-fr",
+  "name": "Français",
+  "tagline": "Extensions AuroraX en français",
+  "description": "Pack de langues : traduit les noms, descriptions, textes d'aide, libellés de réglages et pages des extensions du catalogue AuroraX Store.",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "fr",
+  "catalog": {
+    "opencode": {
+      "name": "Émulation OpenCode",
+      "tagline": "Profil d'émulation OpenCode — type de fournisseur, en-têtes, outils",
+      "description": "Ajoute le type de fournisseur CLI optionnel, injecte ses types d'outils et émule le client CLI amont (en-têtes et schéma d'outils complet). Fonctionne pour le tarif gratuit et le trafic payant par clé API ; le tarif gratuit exige un en-tête de session de exactement 26 caractères hexadécimaux. L'autorisation device-flow vit dans l'extension séparée opencode-oauth.",
+      "ui": {
+        "help": "Installe le type de fournisseur optionnel, les en-têtes et les outils. Ajoutez OpenCode OAuth séparément si vous avez besoin d'une autorisation device-flow."
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "OAuth device-flow pour le type de fournisseur optionnel",
+      "description": "Câblage OAuth device-flow (serveur, client_id, base de vérification) pour le type de fournisseur optionnel. Fournit uniquement la fonction oauth. Installez à côté l'extension opencode CLI pour le type de fournisseur, les en-têtes, les outils et la signature client.",
+      "ui": {
+        "help": "Câble l'OAuth device-flow pour le type de fournisseur optionnel. Pas d'en-têtes ni d'outils — à combiner avec l'extension opencode CLI."
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — authorization-code + PKCE pour les fournisseurs Claude",
+      "description": "Câble Claude OAuth 2.0 authorization-code + PKCE (authorize_url, token_url, client_id, scopes Claude) pour le type de fournisseur Claude. Fournit uniquement la fonction oauth. Installez à côté l'extension de type de fournisseur correspondante pour les en-têtes, les outils et la signature client. Les points de terminaison et les scopes viennent de ce JSON — le gateway ne les code pas en dur.",
+      "ui": {
+        "help": "Claude OAuth 2.0 — authorization-code + PKCE pour les fournisseurs Claude. Les points de terminaison proviennent de cette extension — aucune origine du core codée en dur."
+      }
+    },
+    "vpn-support": {
+      "name": "Support VPN",
+      "tagline": "Points de terminaison VPN par abonnement pour les fournisseurs de votre choix",
+      "description": "Ajoutez des points de terminaison VPN à l'ensemble de sorties des fournisseurs ou pools que vous listez. Collez un abonnement (ou une URI de nœud), choisissez combien d'IP garder et comment les utiliser, et le gateway s'occupe du reste : il récupère l'abonnement, analyse chaque point de terminaison, le sonde, garde les meilleurs et rejette ceux qui ne répondent plus, puis recommence à l'intervalle configuré pour que les abonnements expirés soient remplacés automatiquement. Chaque liste de points de terminaison peut être liée à plusieurs fournisseurs ou pools à la fois. Cette extension ne livre que ses propres addons runtime et UI — aucun code du gateway n'est nécessaire pour qu'elle fonctionne.",
+      "ui": {
+        "help": "Collez un abonnement, choisissez combien d'IP garder, indiquez leur place dans la rotation des sorties et listez les fournisseurs ou pools concernés (séparés par des virgules). Tout le reste a une valeur par défaut fonctionnelle.",
+        "fields": {
+          "subscriptions": {
+            "label": "Abonnements",
+            "description": "Un par ligne : une URL d'abonnement, une URI de nœud telle quelle ou un simple jeton si une URL de base d'abonnement est définie."
+          },
+          "node_count": {
+            "label": "IP à garder",
+            "description": "Combien d'IP sondées garder. 0 en garde toutes."
+          },
+          "egress_mode": {
+            "label": "Mode de sortie",
+            "description": "rotate — avec les adresses sources du fournisseur. fallback — seulement après leur échec ou leur limite de débit. vpn_only — d'abord celles-ci, les adresses sources ensuite."
+          },
+          "apply_to": {
+            "label": "Fournisseurs et pools",
+            "description": "Noms de fournisseurs ou de pools séparés par des virgules, par exemple opencode-zen, backup. * s'applique partout."
+          },
+          "refresh_interval_minutes": {
+            "label": "Intervalle de récupération auto (minutes)",
+            "description": "Fréquence de relecture des abonnements et de nouveau sondage des IP, en minutes. 0 désactive."
+          },
+          "node_order": {
+            "label": "Ordre de sélection",
+            "description": "Trie les IP sonduées par latence : meilleurs d'abord, pires d'abord ou mélangés."
+          },
+          "quality_max_ms": {
+            "label": "Seuil de qualité (ms)",
+            "description": "Les IP plus lentes que cette valeur sont rejetées. 0 garde chaque IP qui répond."
+          },
+          "local_socks_ports": {
+            "label": "Ports SOCKS locaux",
+            "description": "Ports locaux sur lesquels votre cœur de tunnel écoute, séparés par des virgules. Un port = une sortie ; plusieurs ports permettent au gateway de tourner entre elles."
+          },
+          "core_kind": {
+            "label": "Cœur de tunnel",
+            "description": "none : uniquement des rapports d'IP, aucun port local attendu. static : vous lancez le cœur et associez vous-même chaque port local à un point de terminaison. singbox : le gateway change le point de terminaison actif via l'API Clash du cœur."
+          },
+          "protocols": {
+            "label": "Protocoles",
+            "description": "Protocoles à garder, séparés par des virgules, par exemple vless,vmess,ss,trojan."
+          },
+          "region_include": {
+            "label": "Régions à garder",
+            "description": "Fragments de noms de régions séparés par des virgules. Vide = tout garder."
+          },
+          "region_exclude": {
+            "label": "Régions à exclure",
+            "description": "Fragments de noms de régions séparés par des virgules à exclure."
+          },
+          "probe_count": {
+            "label": "Échantillons de sondage",
+            "description": "Nombre de tentatives de connexion par IP ; la médiane est utilisée."
+          },
+          "probe_timeout_ms": {
+            "label": "Délai d'attente du sondage (ms)",
+            "description": "Délai de connexion par échantillon. Les IP qui ne répondent jamais sont supprimées."
+          },
+          "subscription_base_url": {
+            "label": "URL de base d'abonnement",
+            "description": "Optionnel. Un jeton simple de la ligne Abonnements est ajouté à cette URL, la liste ne peut donc contenir que le jeton. Laissez vide si chaque entrée est déjà une URL complète ou une URI de nœud."
+          },
+          "subscription_headers": {
+            "label": "En-têtes d'abonnement",
+            "description": "Objet JSON optionnel des en-têtes HTTP envoyés lors de la récupération des abonnements, par exemple {\"Authorization\":\"Bearer …\"}."
+          },
+          "core_api_url": {
+            "label": "API HTTP du cœur",
+            "description": "URL de base de l'API de contrôle du cœur, par exemple http://127.0.0.1:9090."
+          },
+          "core_api_token": {
+            "label": "Secret de l'API du cœur",
+            "description": "Jeton bearer optionnel pour l'API de contrôle du cœur."
+          },
+          "core_group": {
+            "label": "Groupe sélecteur du cœur",
+            "description": "Groupe de proxy ou tag de sortie sur lequel le point de terminaison est commuté."
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "Support VPN"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "Support VPN",
+            "blocks": {
+              "0": {
+                "text": "État"
+              },
+              "3": {
+                "text": "Points de terminaison"
+              },
+              "6": {
+                "text": "Comment ça marche"
+              },
+              "7": {
+                "items": [
+                  "Le mode de sortie détermine la place de ces IP : avec les adresses sources du fournisseur (rotate), derrière (fallback) ou devant (vpn_only).",
+                  "Les abonnements sont relus à l'intervalle de récupération auto, les points de terminaison expirés sont donc remplacés automatiquement.",
+                  "Les réglages se trouvent dans Réglages → Extensions → Support VPN."
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Thème de tableau de bord Catppuccin Mocha (variantes sombre et claire)",
+      "description": "Thème de tableau de bord utilisant la palette Catppuccin Mocha avec une variante claire Latte correspondante. Couleurs d'accent, d'arrière-plan, de surface, de texte et de bordure modifiables.",
+      "ui": {
+        "help": "Appliquez cette extension pour changer le thème du tableau de bord. Désactivez-la pour revenir en arrière.",
+        "fields": {
+          "accent": {
+            "label": "Accent"
+          },
+          "--bg": {
+            "label": "Arrière-plan"
+          },
+          "--bg-surface": {
+            "label": "Surface"
+          },
+          "--text": {
+            "label": "Texte"
+          },
+          "--border": {
+            "label": "Bordure"
+          },
+          "--radius-sm": {
+            "label": "Rayon"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Thème de tableau de bord Catppuccin Frappé (variantes sombre et claire)",
+      "description": "Thème de tableau de bord utilisant la palette Catppuccin Frappé avec une variante claire Latte correspondante. Couleurs d'accent, d'arrière-plan, de surface, de texte et de bordure modifiables.",
+      "ui": {
+        "help": "Appliquez cette extension pour changer le thème du tableau de bord. Désactivez-la pour revenir en arrière.",
+        "fields": {
+          "accent": {
+            "label": "Accent"
+          },
+          "--bg": {
+            "label": "Arrière-plan"
+          },
+          "--bg-surface": {
+            "label": "Surface"
+          },
+          "--text": {
+            "label": "Texte"
+          },
+          "--border": {
+            "label": "Bordure"
+          },
+          "--radius-sm": {
+            "label": "Rayon"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Thème de tableau de bord Catppuccin Macchiato (variantes sombre et claire)",
+      "description": "Thème de tableau de bord utilisant la palette Catppuccin Macchiato avec une variante claire Latte correspondante. Couleurs d'accent, d'arrière-plan, de surface, de texte et de bordure modifiables.",
+      "ui": {
+        "help": "Appliquez cette extension pour changer le thème du tableau de bord. Désactivez-la pour revenir en arrière.",
+        "fields": {
+          "accent": {
+            "label": "Accent"
+          },
+          "--bg": {
+            "label": "Arrière-plan"
+          },
+          "--bg-surface": {
+            "label": "Surface"
+          },
+          "--text": {
+            "label": "Texte"
+          },
+          "--border": {
+            "label": "Bordure"
+          },
+          "--radius-sm": {
+            "label": "Rayon"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-cs",
+  "name": "Čeština",
+  "tagline": "Rozšíření AuroraX v češtině",
+  "description": "Jazykový balíček: překládá názvy, popisy, texty nápovědy, popisky nastavení a stránky rozšíření z katalogu AuroraX Store.",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "cs",
+  "catalog": {
+    "opencode": {
+      "name": "Emulace OpenCode",
+      "tagline": "Profil emulace OpenCode — typ poskytovatele, hlavičky, nástroje",
+      "description": "Přidává volitelný typ poskytovatele CLI, vstřikuje jeho typy nástrojů a emuluje CLI klienta upstream (hlavičky a kompletní schéma nástrojů). Funguje pro provoz z bezplatného tarifu i placený s API klíčem; bezplatný tarif vyžaduje hlavičku sezení přesně o 26 hex znacích. Autorizace device-flow je v samostatném rozšíření opencode-oauth.",
+      "ui": {
+        "help": "Nainstaluje volitelný typ poskytovatele, hlavičky a nástroje. Přidejte OpenCode OAuth zvlášť, pokud potřebujete autorizaci device-flow."
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "OAuth device-flow pro volitelný typ poskytovatele",
+      "description": "Propojení OAuth device-flow (server, client_id, ověřovací základ) pro volitelný typ poskytovatele. Poskytuje pouze funkci oauth. Nainstalujte vedle rozšíření opencode CLI pro typ poskytovatele, hlavičky, nástroje a podpis klienta.",
+      "ui": {
+        "help": "Propojuje OAuth device-flow pro volitelný typ poskytovatele. Bez hlaviček a nástrojů — kombinujte s rozšířením opencode CLI."
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — authorization-code + PKCE pro poskytovatele Claude",
+      "description": "Propojuje Claude OAuth 2.0 authorization-code + PKCE (authorize_url, token_url, client_id, rozsahy Claude) pro typ poskytovatele Claude. Poskytuje pouze funkci oauth. Nainstalujte vedle odpovídající rozšíření typu poskytovatele pro hlavičky, nástroje a podpis klienta. Koncové body a rozsahy dodává tento JSON — brána je nemá zakódované.",
+      "ui": {
+        "help": "Claude OAuth 2.0 — authorization-code + PKCE pro poskytovatele Claude. Koncové body pocházejí z tohoto rozšíření — žádné zakódované původy jádra."
+      }
+    },
+    "vpn-support": {
+      "name": "Podpora VPN",
+      "tagline": "VPN koncové body z předplatného pro vybrané poskytovatele",
+      "description": "Přidejte VPN koncové body do sady výstupů jmenovaných poskytovatelů nebo poolů. Vložte předplatné (nebo URI uzlu), zvolte, kolik IP ponechat a jak je používat, a brána se postará o zbytek: stáhne předplatné, zanalyzuje každý koncový bod, ověří ho, ponechá nejlepší a odstraní ty, které přestaly odpovídat, a pak podle nastaveného intervalu opakuje, takže prošlé předplatné se automaticky nahradí. Každý seznam koncových bodů lze najednou navázat na několik poskytovatelů nebo poolů. Toto rozšíření dodává pouze vlastní runtime a UI addony — pro fungování není potřeba žádný kód brány.",
+      "ui": {
+        "help": "Vložte předplatné, zvolte, kolik IP ponechat, určete jejich místo v rotaci výstupů a vyjmenujte poskytovatele nebo pooly, kterých se týkají (oddělené čárkami). Vše ostatní má funkční výchozí hodnotu.",
+        "fields": {
+          "subscriptions": {
+            "label": "Předplatná",
+            "description": "Jedno na řádek: URL předplatného, URI uzlu takové, jaké je, nebo samotný token, je-li nastavena základní URL předplatného."
+          },
+          "node_count": {
+            "label": "IP k ponechání",
+            "description": "Kolik ověřených IP ponechat. 0 ponechá všechny."
+          },
+          "egress_mode": {
+            "label": "Režim výstupu",
+            "description": "rotate — s vlastními zdrojovými adresami poskytovatele. fallback — až po jejich selhání nebo limitu. vpn_only — nejdřív tyto, nakonec zdrojové adresy."
+          },
+          "apply_to": {
+            "label": "Poskytovatelé a pooly",
+            "description": "Názvy poskytovatelů nebo poolů oddělené čárkami, např. opencode-zen, backup. * platí všude."
+          },
+          "refresh_interval_minutes": {
+            "label": "Interval automatického načítání (minuty)",
+            "description": "Jak často se předplatná znovu čtou a IP znovu ověřují, v minutách. 0 vypne."
+          },
+          "node_order": {
+            "label": "Pořadí výběru",
+            "description": "Řadí ověřené IP podle odezvy: nejdřív nejlepší, nejdřív nejhorší nebo náhodně."
+          },
+          "quality_max_ms": {
+            "label": "Práh kvality (ms)",
+            "description": "IP pomalejší než tato hodnota se odstraňují. 0 ponechá každou IP, která odpovídá."
+          },
+          "local_socks_ports": {
+            "label": "Lokální SOCKS porty",
+            "description": "Lokální porty, na kterých naslouchá tunelové jádro, oddělené čárkami. Jeden port = jeden výstup; více portů umožňuje bráně mezi nimi rotovat."
+          },
+          "core_kind": {
+            "label": "Tunelové jádro",
+            "description": "none: jen hlásí IP, nelokální porty se nečekají. static: jádro spouštíte sami a každý lokální port přiřadíte koncovému bodu sami. singbox: brána přepíná aktivní koncový bod přes Clash API jádra."
+          },
+          "protocols": {
+            "label": "Protokoly",
+            "description": "Protokoly k ponechání, oddělené čárkami, např. vless,vmess,ss,trojan."
+          },
+          "region_include": {
+            "label": "Regiony k ponechání",
+            "description": "Fragmenty názvů regionů oddělené čárkami. Prázdné ponechá vše."
+          },
+          "region_exclude": {
+            "label": "Regiony k vynechání",
+            "description": "Fragmenty názvů regionů oddělené čárkami k vynechání."
+          },
+          "probe_count": {
+            "label": "Vzorky měření",
+            "description": "Počet pokusů o připojení na IP; používá se medián."
+          },
+          "probe_timeout_ms": {
+            "label": "Časový limit měření (ms)",
+            "description": "Časový limit připojení na jeden vzorek. IP, které nikdy neodpoví, se odstraní."
+          },
+          "subscription_base_url": {
+            "label": "Základní URL předplatného",
+            "description": "Volitelné. Samotný token ze řádku Předplatná se připojí k této URL, takže seznam může obsahovat pouze token. Ponechte prázdné, pokud je každá položka už plná URL nebo URI uzlu."
+          },
+          "subscription_headers": {
+            "label": "Hlavičky předplatného",
+            "description": "Volitelný JSON objekt HTTP hlaviček posílaných při načítání předplatných, např. {\"Authorization\":\"Bearer …\"}."
+          },
+          "core_api_url": {
+            "label": "HTTP API jádra",
+            "description": "Základní URL řídicí API jádra, např. http://127.0.0.1:9090."
+          },
+          "core_api_token": {
+            "label": "Tajemství API jádra",
+            "description": "Volitelný bearer token pro řídicí API jádra."
+          },
+          "core_group": {
+            "label": "Skupina selektoru jádra",
+            "description": "Skupina proxy nebo tag odchozího spojení, na kterém se koncový bod přepíná."
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "Podpora VPN"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "Podpora VPN",
+            "blocks": {
+              "0": {
+                "text": "Stav"
+              },
+              "3": {
+                "text": "Koncové body"
+              },
+              "6": {
+                "text": "Jak to funguje"
+              },
+              "7": {
+                "items": [
+                  "Režim výstupu určuje, kde tyto IP leží: s vlastními zdrojovými adresami poskytovatele (rotate), za nimi (fallback) nebo před nimi (vpn_only).",
+                  "Předplatná se načítají v intervalu automatického načítání, takže prošlé koncové body se nahradí automaticky.",
+                  "Nastavení najdete v Nastavení → Rozšíření → Podpora VPN."
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Téma panelu Catppuccin Mocha (tmavé a světlé varianty)",
+      "description": "Téma panelu s paletou Catppuccin Mocha a odpovídající světlou variantou Latte. Upravit lze barvy akcentu, pozadí, povrchu, textu a rámečků.",
+      "ui": {
+        "help": "Použijte toto rozšíření pro změnu tématu panelu. Vypněte jej pro návrat zpět.",
+        "fields": {
+          "accent": {
+            "label": "Akcent"
+          },
+          "--bg": {
+            "label": "Pozadí"
+          },
+          "--bg-surface": {
+            "label": "Povrch"
+          },
+          "--text": {
+            "label": "Text"
+          },
+          "--border": {
+            "label": "Rámeček"
+          },
+          "--radius-sm": {
+            "label": "Zaoblení"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Téma panelu Catppuccin Frappé (tmavé a světlé varianty)",
+      "description": "Téma panelu s paletou Catppuccin Frappé a odpovídající světlou variantou Latte. Upravit lze barvy akcentu, pozadí, povrchu, textu a rámečků.",
+      "ui": {
+        "help": "Použijte toto rozšíření pro změnu tématu panelu. Vypněte jej pro návrat zpět.",
+        "fields": {
+          "accent": {
+            "label": "Akcent"
+          },
+          "--bg": {
+            "label": "Pozadí"
+          },
+          "--bg-surface": {
+            "label": "Povrch"
+          },
+          "--text": {
+            "label": "Text"
+          },
+          "--border": {
+            "label": "Rámeček"
+          },
+          "--radius-sm": {
+            "label": "Zaoblení"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Téma panelu Catppuccin Macchiato (tmavé a světlé varianty)",
+      "description": "Téma panelu s paletou Catppuccin Macchiato a odpovídající světlou variantou Latte. Upravit lze barvy akcentu, pozadí, povrchu, textu a rámečků.",
+      "ui": {
+        "help": "Použijte toto rozšíření pro změnu tématu panelu. Vypněte jej pro návrat zpět.",
+        "fields": {
+          "accent": {
+            "label": "Akcent"
+          },
+          "--bg": {
+            "label": "Pozadí"
+          },
+          "--bg-surface": {
+            "label": "Povrch"
+          },
+          "--text": {
+            "label": "Text"
+          },
+          "--border": {
+            "label": "Rámeček"
+          },
+          "--radius-sm": {
+            "label": "Zaoblení"
+          }
+        }
+      }
+    }
+  }
+}

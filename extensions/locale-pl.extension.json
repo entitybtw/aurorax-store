@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-pl",
+  "name": "Język polski",
+  "tagline": "Rozszerzenia AuroraX po polsku",
+  "description": "Pakiet językowy: tłumaczy nazwy, opisy, treści pomocy, etykiety ustawień i strony rozszerzeń z katalogu AuroraX Store.",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "pl",
+  "catalog": {
+    "opencode": {
+      "name": "Emulacja OpenCode",
+      "tagline": "Profil emulacji OpenCode — typ dostawcy, nagłówki, narzędzia",
+      "description": "Dodaje opcjonalny typ dostawcy CLI, wstrzykuje jego typy narzędzi i emuluje klienta CLI upstream (nagłówki oraz pełny schemat narzędzi). Działa dla ruchu z darmowego planu i płatnego z kluczem API; darmowy plan wymaga nagłówka sesji o dokładnej długości 26 znaków hex. Autoryzacja device-flow znajduje się w osobnym rozszerzeniu opencode-oauth.",
+      "ui": {
+        "help": "Instaluje opcjonalny typ dostawcy, nagłówki i narzędzia. Dodaj OpenCode OAuth osobnie, jeśli potrzebujesz autoryzacji device-flow."
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "OAuth device-flow dla opcjonalnego typu dostawcy",
+      "description": "Przewodzenie OAuth device-flow (serwer, client_id, baza weryfikacji) dla opcjonalnego typu dostawcy. Udostępnia tylko funkcję oauth. Zainstaluj obok rozszerzenie opencode CLI dla typu dostawcy, nagłówków, narzędzi i podpisu klienta.",
+      "ui": {
+        "help": "Podłącza OAuth device-flow dla opcjonalnego typu dostawcy. Bez nagłówków i narzędzi — łącz z rozszerzeniem opencode CLI."
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — authorization-code + PKCE dla dostawców Claude",
+      "description": "Przewodzi Claude OAuth 2.0 authorization-code + PKCE (authorize_url, token_url, client_id, zakresy Claude) dla typu dostawcy Claude. Udostępnia tylko funkcję oauth. Zainstaluj obok odpowiednie rozszerzenie typu dostawcy dla nagłówków, narzędzi i podpisu klienta. Punkty końcowe i zakresy pochodzą z tego JSON-a — bramka nie ma ich zakodowanych na sztywno.",
+      "ui": {
+        "help": "Claude OAuth 2.0 — authorization-code + PKCE dla dostawców Claude. Punkty końcowe pochodzą z tego rozszerzenia — żadnych zakodowanych na sztywno adresów źródłowych rdzenia."
+      }
+    },
+    "vpn-support": {
+      "name": "Wsparcie VPN",
+      "tagline": "Punkty końcowe VPN z subskrypcji dla wybranych dostawców",
+      "description": "Dodaj punkty końcowe VPN do zestawu wyjść wskazanych dostawców lub pul. Wklej subskrypcję (lub URI węzła), wybierz, ile adresów IP zachować i jak ich używać, a resztą zajmie się bramka: pobierze subskrypcję, przeanalizuje każdy punkt końcowy, sprawdzi go, zachowa najlepsze i odrzuci te, które przestały odpowiadać, a następnie powtórzy w skonfigurowanym odstępie czasu, więc wygasłe subskrypcje są wymieniane automatycznie. Każdą listę punktów końcowych można przypisać naraz do kilku dostawców lub pul. To rozszerzenie dostarcza wyłącznie własne dodatki runtime i UI — do działania nie jest potrzebny kod bramki.",
+      "ui": {
+        "help": "Wklej subskrypcję, wybierz, ile adresów IP zachować, określ ich miejsce w rotacji wyjść i wymień dostawców lub puly, których dotyczą (po przecinkach). Reszta ma działające domyślne ustawienia.",
+        "fields": {
+          "subscriptions": {
+            "label": "Subskrypcje",
+            "description": "Jedna na linię: adres URL subskrypcji, URI węzła taki jaki jest lub sam token, gdy ustawiono bazowy adres URL subskrypcji."
+          },
+          "node_count": {
+            "label": "Adresów IP do zachowania",
+            "description": "Ile sprawdzonych adresów IP zachować. 0 zachowuje wszystkie."
+          },
+          "egress_mode": {
+            "label": "Tryb wyjścia",
+            "description": "rotate — razem z własnymi adresami źródłowymi dostawcy. fallback — dopiero po ich awarii lub limicie. vpn_only — najpierw te, na końcu adresy źródłowe."
+          },
+          "apply_to": {
+            "label": "Dostawcy i puli",
+            "description": "Nazwy dostawców lub pul po przecinkach, np. opencode-zen, backup. * działa wszędzie."
+          },
+          "refresh_interval_minutes": {
+            "label": "Odstęp automatycznego pobierania (minuty)",
+            "description": "Jak często subskrypcje są ponownie odczytywane, a adresy IP sprawdzane, w minutach. 0 wyłącza."
+          },
+          "node_order": {
+            "label": "Kolejność wyboru",
+            "description": "Sortuje sprawdzone adresy IP według opóźnienia: najlepsze najpierw, najgorsze najpierw lub losowo."
+          },
+          "quality_max_ms": {
+            "label": "Próg jakości (ms)",
+            "description": "Adresy IP wolniejsze od tej wartości są odrzucane. 0 zachowuje każdy adres IP, który odpowiada."
+          },
+          "local_socks_ports": {
+            "label": "Lokalne porty SOCKS",
+            "description": "Lokalne porty, na których nasłuchuje tunelowe jądro, po przecinkach. Jeden port = jedno wyjście; kilka portów pozwala bramce rotować między nimi."
+          },
+          "core_kind": {
+            "label": "Tunnel core",
+            "description": "none: tylko raportuje adresy IP, nie oczekuje lokalnych portów. static: uruchamiasz jądro sam i przypisujesz każdy lokalny port do punktu końcowego. singbox: bramka przełącza aktywny punkt końcowy przez API Clash jądra."
+          },
+          "protocols": {
+            "label": "Protokoły",
+            "description": "Protokoły do zachowania po przecinkach, np. vless,vmess,ss,trojan."
+          },
+          "region_include": {
+            "label": "Regiony do zachowania",
+            "description": "Fragmenty nazw regionów po przecinkach. Puste zachowuje wszystko."
+          },
+          "region_exclude": {
+            "label": "Regiony do odrzucenia",
+            "description": "Fragmenty nazw regionów po przecinkach do wyłączenia."
+          },
+          "probe_count": {
+            "label": "Próbki pomiaru",
+            "description": "Liczba prób połączenia na adres IP; używana jest mediana."
+          },
+          "probe_timeout_ms": {
+            "label": "Limit czasu pomiaru (ms)",
+            "description": "Limit czasu połączenia na jedną próbkę. Adresy IP, które nigdy nie odpowiadają, są usuwane."
+          },
+          "subscription_base_url": {
+            "label": "Bazowy adres URL subskrypcji",
+            "description": "Opcjonalnie. Sam token z linii Subskrypcje jest doklejany do tego adresu URL, więc na liście może leżeć tylko token. Pozostaw puste, gdy każdy wpis to już pełny adres URL lub URI węzła."
+          },
+          "subscription_headers": {
+            "label": "Nagłówki subskrypcji",
+            "description": "Opcjonalny obiekt JSON nagłówków HTTP wysyłanych przy pobieraniu subskrypcji, np. {\"Authorization\":\"Bearer …\"}."
+          },
+          "core_api_url": {
+            "label": "HTTP API jądra",
+            "description": "Bazowy adres URL API sterującego jądrem, np. http://127.0.0.1:9090."
+          },
+          "core_api_token": {
+            "label": "Sekret API jądra",
+            "description": "Opcjonalny token bearer do API sterującego jądrem."
+          },
+          "core_group": {
+            "label": "Grupa selektora jądra",
+            "description": "Grupa proxy lub tag wyjścia, na którym przełączany jest punkt końcowy."
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "Wsparcie VPN"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "Wsparcie VPN",
+            "blocks": {
+              "0": {
+                "text": "Status"
+              },
+              "3": {
+                "text": "Punkty końcowe"
+              },
+              "6": {
+                "text": "Jak to działa"
+              },
+              "7": {
+                "items": [
+                  "Tryb wyjścia decyduje, gdzie znajdują się te adresy IP: razem z własnymi adresami źródłowymi dostawcy (rotate), za nimi (fallback) lub przed nimi (vpn_only).",
+                  "Subskrypcje są ponownie odczytywane co odstęp automatycznego pobierania, więc wygasłe punkty końcowe są wymieniane automatycznie.",
+                  "Ustawienia znajdują się w Ustawienia → Rozszerzenia → Wsparcie VPN."
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Motyw pulpitu Catppuccin Mocha (wersje ciemna i jasna)",
+      "description": "Motyw pulpitu oparty na palecie Catppuccin Mocha z pasującą jasną wersją Latte. Edytowalne kolory akcentu, tła, powierzchni, tekstu i obramowania.",
+      "ui": {
+        "help": "Zastosuj to rozszerzenie, aby zmienić motyw pulpitu. Wyłącz je, aby wrócić.",
+        "fields": {
+          "accent": {
+            "label": "Akcent"
+          },
+          "--bg": {
+            "label": "Tło"
+          },
+          "--bg-surface": {
+            "label": "Powierzchnia"
+          },
+          "--text": {
+            "label": "Tekst"
+          },
+          "--border": {
+            "label": "Obramowanie"
+          },
+          "--radius-sm": {
+            "label": "Promień"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Motyw pulpitu Catppuccin Frappé (wersje ciemna i jasna)",
+      "description": "Motyw pulpitu oparty na palecie Catppuccin Frappé z pasującą jasną wersją Latte. Edytowalne kolory akcentu, tła, powierzchni, tekstu i obramowania.",
+      "ui": {
+        "help": "Zastosuj to rozszerzenie, aby zmienić motyw pulpitu. Wyłącz je, aby wrócić.",
+        "fields": {
+          "accent": {
+            "label": "Akcent"
+          },
+          "--bg": {
+            "label": "Tło"
+          },
+          "--bg-surface": {
+            "label": "Powierzchnia"
+          },
+          "--text": {
+            "label": "Tekst"
+          },
+          "--border": {
+            "label": "Obramowanie"
+          },
+          "--radius-sm": {
+            "label": "Promień"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Motyw pulpitu Catppuccin Macchiato (wersje ciemna i jasna)",
+      "description": "Motyw pulpitu oparty na palecie Catppuccin Macchiato z pasującą jasną wersją Latte. Edytowalne kolory akcentu, tła, powierzchni, tekstu i obramowania.",
+      "ui": {
+        "help": "Zastosuj to rozszerzenie, aby zmienić motyw pulpitu. Wyłącz je, aby wrócić.",
+        "fields": {
+          "accent": {
+            "label": "Akcent"
+          },
+          "--bg": {
+            "label": "Tło"
+          },
+          "--bg-surface": {
+            "label": "Powierzchnia"
+          },
+          "--text": {
+            "label": "Tekst"
+          },
+          "--border": {
+            "label": "Obramowanie"
+          },
+          "--radius-sm": {
+            "label": "Promień"
+          }
+        }
+      }
+    }
+  }
+}

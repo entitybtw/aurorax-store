@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-es",
+  "name": "Español",
+  "tagline": "Extensiones de AuroraX en español",
+  "description": "Paquete de idiomas: traduce nombres, descripciones, textos de ayuda, etiquetas de ajustes y páginas de las extensiones del catálogo AuroraX Store.",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "es",
+  "catalog": {
+    "opencode": {
+      "name": "Emulación de OpenCode",
+      "tagline": "Perfil de emulación de OpenCode — tipo de proveedor, cabeceras, herramientas",
+      "description": "Añade el tipo de proveedor CLI opcional, inyecta sus tipos de herramientas y emula al cliente CLI del upstream (cabeceras y esquema completo de herramientas). Funciona con tráfico de tarifa gratuita y de pago con clave API; la tarifa gratuita exige una cabecera de sesión de exactamente 26 caracteres hexadecimales. La autorización device-flow vive en la extensión independiente opencode-oauth.",
+      "ui": {
+        "help": "Instala el tipo de proveedor opcional, las cabeceras y las herramientas. Añade OpenCode OAuth por separado si necesitas autorización device-flow."
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "OAuth device-flow para el tipo de proveedor opcional",
+      "description": "Configuración de OAuth device-flow (servidor, client_id, base de verificación) para el tipo de proveedor opcional. Proporciona solo la función oauth. Instala al lado la extensión opencode CLI para el tipo de proveedor, las cabeceras, las herramientas y la firma del cliente.",
+      "ui": {
+        "help": "Conecta el OAuth device-flow para el tipo de proveedor opcional. Sin cabeceras ni herramientas — combínala con la extensión opencode CLI."
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — authorization-code + PKCE para proveedores Claude",
+      "description": "Configura Claude OAuth 2.0 authorization-code + PKCE (authorize_url, token_url, client_id, ámbitos de Claude) para el tipo de proveedor Claude. Proporciona solo la función oauth. Instala al lado la extensión del tipo de proveedor correspondiente para las cabeceras, las herramientas y la firma del cliente. Los puntos finales y los ámbitos los aporta este JSON — el gateway no los tiene codificados.",
+      "ui": {
+        "help": "Claude OAuth 2.0 — authorization-code + PKCE para proveedores Claude. Los puntos finales vienen de esta extensión — ningún origen del núcleo codificado."
+      }
+    },
+    "vpn-support": {
+      "name": "Soporte VPN",
+      "tagline": "Puntos finales VPN de suscripción para los proveedores que elijas",
+      "description": "Añade puntos finales VPN al conjunto de salidas de los proveedores o pools que indiques. Pega una suscripción (o un URI de nodo), elige cuántas IPs conservar y cómo usarlas, y el gateway se encarga del resto: obtiene la suscripción, analiza cada punto final, lo sondea, conserva los mejores y descarta los que dejaron de responder, y repite en el intervalo configurado para que las suscripciones caducadas se reemplacen automáticamente. Cada lista de puntos finales puede vincularse a varios proveedores o pools a la vez. Esta extensión solo incluye sus propios addons de runtime y UI — no se necesita código del gateway para que funcione.",
+      "ui": {
+        "help": "Pega una suscripción, elige cuántas IPs conservar, indica su lugar en la rotación de salidas y lista los proveedores o pools a los que aplica (separados por comas). Todo lo demás tiene un valor predeterminado funcional.",
+        "fields": {
+          "subscriptions": {
+            "label": "Suscripciones",
+            "description": "Una por línea: una URL de suscripción, un URI de nodo tal cual o un token solo, si hay una URL base de suscripción."
+          },
+          "node_count": {
+            "label": "IP a conservar",
+            "description": "Cuántas IPs sondeadas conservar. 0 conserva todas."
+          },
+          "egress_mode": {
+            "label": "Modo de salida",
+            "description": "rotate — con las direcciones de origen del proveedor. fallback — solo tras su fallo o límite. vpn_only — primero estas, luego las direcciones de origen."
+          },
+          "apply_to": {
+            "label": "Proveedores y pools",
+            "description": "Nombres de proveedores o pools separados por comas, p. ej. opencode-zen, backup. * se aplica en todas partes."
+          },
+          "refresh_interval_minutes": {
+            "label": "Intervalo de obtención automática (minutos)",
+            "description": "Cada cuánto se releen las suscripciones y se revuelven las IP, en minutos. 0 lo desactiva."
+          },
+          "node_order": {
+            "label": "Orden de selección",
+            "description": "Ordena las IP sondeadas por latencia: mejores primero, peores primero o en orden aleatorio."
+          },
+          "quality_max_ms": {
+            "label": "Umbral de calidad (ms)",
+            "description": "Las IP más lentas que este valor se descartan. 0 conserva cada IP que responde."
+          },
+          "local_socks_ports": {
+            "label": "Puertos SOCKS locales",
+            "description": "Puertos locales en los que escucha tu núcleo de túnel, separados por comas. Un puerto = una salida; varios puertos permiten al gateway rotar entre ellas."
+          },
+          "core_kind": {
+            "label": "Núcleo de túnel",
+            "description": "none: solo informa IP, no espera puertos locales. static: tú ejecutas el núcleo y asignas cada puerto local a un punto final. singbox: el gateway cambia el punto final activo a través de la API Clash del núcleo."
+          },
+          "protocols": {
+            "label": "Protocolos",
+            "description": "Protocolos a conservar, separados por comas, p. ej. vless,vmess,ss,trojan."
+          },
+          "region_include": {
+            "label": "Regiones a conservar",
+            "description": "Fragmentos de nombres de regiones separados por comas. Vacío conserva todo."
+          },
+          "region_exclude": {
+            "label": "Regiones a descartar",
+            "description": "Fragmentos de nombres de regiones separados por comas que se excluyen."
+          },
+          "probe_count": {
+            "label": "Muestras de sondeo",
+            "description": "Número de intentos de conexión por IP; se usa la mediana."
+          },
+          "probe_timeout_ms": {
+            "label": "Tiempo de espera del sondeo (ms)",
+            "description": "Tiempo de conexión por muestra. Las IP que nunca responden se eliminan."
+          },
+          "subscription_base_url": {
+            "label": "URL base de suscripción",
+            "description": "Opcional. Un token solo de la línea Suscripciones se añade a esta URL, así que la lista puede contener solo el token. Déjalo vacío si cada entrada ya es una URL completa o un URI de nodo."
+          },
+          "subscription_headers": {
+            "label": "Cabeceras de suscripción",
+            "description": "Objeto JSON opcional de cabeceras HTTP al obtener las suscripciones, p. ej. {\"Authorization\":\"Bearer …\"}."
+          },
+          "core_api_url": {
+            "label": "API HTTP del núcleo",
+            "description": "URL base de la API de control del núcleo, p. ej. http://127.0.0.1:9090."
+          },
+          "core_api_token": {
+            "label": "Secreto de la API del núcleo",
+            "description": "Token bearer opcional para la API de control del núcleo."
+          },
+          "core_group": {
+            "label": "Grupo selector del núcleo",
+            "description": "Grupo de proxy o tag de salida en el que se conmuta el punto final."
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "Soporte VPN"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "Soporte VPN",
+            "blocks": {
+              "0": {
+                "text": "Estado"
+              },
+              "3": {
+                "text": "Puntos finales"
+              },
+              "6": {
+                "text": "Cómo funciona"
+              },
+              "7": {
+                "items": [
+                  "El modo de salida decide dónde quedan estas IP: con las direcciones de origen del proveedor (rotate), detrás (fallback) o delante (vpn_only).",
+                  "Las suscripciones se releen en el intervalo de obtención automática, así que los puntos finales caducados se reemplazan automáticamente.",
+                  "Los ajustes están en Ajustes → Extensiones → Soporte VPN."
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Tema de panel Catppuccin Mocha (variantes oscura y clara)",
+      "description": "Tema de panel con la paleta Catppuccin Mocha y una variante clara Latte correspondiente. Colores de acento, fondo, superficie, texto y borde editables.",
+      "ui": {
+        "help": "Aplica esta extensión para cambiar el tema del panel. Desactívala para volver atrás.",
+        "fields": {
+          "accent": {
+            "label": "Acento"
+          },
+          "--bg": {
+            "label": "Fondo"
+          },
+          "--bg-surface": {
+            "label": "Superficie"
+          },
+          "--text": {
+            "label": "Texto"
+          },
+          "--border": {
+            "label": "Borde"
+          },
+          "--radius-sm": {
+            "label": "Radio"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Tema de panel Catppuccin Frappé (variantes oscura y clara)",
+      "description": "Tema de panel con la paleta Catppuccin Frappé y una variante clara Latte correspondiente. Colores de acento, fondo, superficie, texto y borde editables.",
+      "ui": {
+        "help": "Aplica esta extensión para cambiar el tema del panel. Desactívala para volver atrás.",
+        "fields": {
+          "accent": {
+            "label": "Acento"
+          },
+          "--bg": {
+            "label": "Fondo"
+          },
+          "--bg-surface": {
+            "label": "Superficie"
+          },
+          "--text": {
+            "label": "Texto"
+          },
+          "--border": {
+            "label": "Borde"
+          },
+          "--radius-sm": {
+            "label": "Radio"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Tema de panel Catppuccin Macchiato (variantes oscura y clara)",
+      "description": "Tema de panel con la paleta Catppuccin Macchiato y una variante clara Latte correspondiente. Colores de acento, fondo, superficie, texto y borde editables.",
+      "ui": {
+        "help": "Aplica esta extensión para cambiar el tema del panel. Desactívala para volver atrás.",
+        "fields": {
+          "accent": {
+            "label": "Acento"
+          },
+          "--bg": {
+            "label": "Fondo"
+          },
+          "--bg-surface": {
+            "label": "Superficie"
+          },
+          "--text": {
+            "label": "Texto"
+          },
+          "--border": {
+            "label": "Borde"
+          },
+          "--radius-sm": {
+            "label": "Radio"
+          }
+        }
+      }
+    }
+  }
+}

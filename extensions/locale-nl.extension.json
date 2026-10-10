@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-nl",
+  "name": "Nederlands",
+  "tagline": "AuroraX-extensies in het Nederlands",
+  "description": "Taalpakket: vertaalt namen, beschrijvingen, helpteksten, instellingslabels en pagina's van de extensies in de AuroraX Store-catalogus.",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "nl",
+  "catalog": {
+    "opencode": {
+      "name": "OpenCode-emulatie",
+      "tagline": "OpenCode-emulatieprofiel — providertype, headers, tools",
+      "description": "Voegt het optionele CLI-providertype toe, injecteert zijn tooltypen en emuleert de upstream CLI-client (headers en volledig toolschema). Werkt voor gratis verkeer en betaald verkeer met API-sleutel; het gratis plan vereist een sessieheader van exact 26 hex-tekens. Device-flow-autorisatie zit in de losse extensie opencode-oauth.",
+      "ui": {
+        "help": "Installeert het optionele providertype, headers en tools. Voeg OpenCode OAuth apart toe als je device-flow-autorisatie nodig hebt."
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "OAuth device-flow voor het optionele providertype",
+      "description": "OAuth device-flow-bedrading (server, client_id, verificatiebasis) voor het optionele providertype. Levert alleen het oauth-feature. Installeer daarnaast de extensie opencode CLI voor het providertype, headers, tools en handtekening van de client.",
+      "ui": {
+        "help": "Bedraad OAuth device-flow voor het optionele providertype. Geen headers of tools — combineren met de extensie opencode CLI."
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — authorization-code + PKCE voor Claude-providers",
+      "description": "Bedraadt Claude OAuth 2.0 authorization-code + PKCE (authorize_url, token_url, client_id, Claude-scopes) voor het Claude-providertype. Levert alleen het oauth-feature. Installeer daarnaast de passende provider-type-extensie voor headers, tools en handtekening van de client. Eindpunten en scopes komen uit deze JSON — de gateway codeert ze niet vast.",
+      "ui": {
+        "help": "Claude OAuth 2.0 — authorization-code + PKCE voor Claude-providers. Eindpunten komen uit deze extensie — geen vastgecodeerde core-origins."
+      }
+    },
+    "vpn-support": {
+      "name": "VPN-ondersteuning",
+      "tagline": "VPN-eindpunten uit abonnementen voor de providers van jouw keuze",
+      "description": "Voeg VPN-eindpunten toe aan de uitgangsset van de providers of pools die je opsomt. Plak een abonnement (of een node-URI), kies hoeveel IP's je wilt behouden en hoe ze worden gebruikt, en de gateway doet de rest: hij haalt het abonnement op, parseert elk eindpunt, test het, houdt de beste over en vervalt de die niet meer antwoorden, en herhaalt dit op het ingestelde interval zodat verlopen abonnementen automatisch worden vervangen. Elke eindpuntenlijst kan aan meerdere providers of pools tegelijk worden gekoppeld. Deze extensie levert alleen zijn eigen runtime- en UI-addons — er is geen gateway-code nodig om te werken.",
+      "ui": {
+        "help": "Plak een abonnement, kies hoeveel IP's je wilt behouden, bepaal hun plek in de uitgangsrotatie en som de providers of pools op waarvoor ze gelden (kommagescheiden). De rest heeft een werkende standaard.",
+        "fields": {
+          "subscriptions": {
+            "label": "Abonnementen",
+            "description": "Eén per regel: een abonnements-URL, een node-URI zoals die is of een kale token als er een abonnementsbasis-URL is ingesteld."
+          },
+          "node_count": {
+            "label": "Te behouden IP's",
+            "description": "Hoeveel geteste IP's er worden behouden. 0 behoudt ze allemaal."
+          },
+          "egress_mode": {
+            "label": "Uitgangsmodus",
+            "description": "rotate — met de eigen bronadressen van de provider. fallback — pas na falen of rate-limit. vpn_only — deze eerst, bronadressen laatst."
+          },
+          "apply_to": {
+            "label": "Providers en pools",
+            "description": "Kommagescheiden provider- of poolnamen, bijv. opencode-zen, backup. * geldt overal."
+          },
+          "refresh_interval_minutes": {
+            "label": "Auto-ophaalinterval (minuten)",
+            "description": "Hoe vaak abonnementen opnieuw worden gelezen en IP's opnieuw getest, in minuten. 0 schakelt het uit."
+          },
+          "node_order": {
+            "label": "Selectievolgorde",
+            "description": "Sorteert geteste IP's op latency: beste eerst, slechtste eerst of willekeurig."
+          },
+          "quality_max_ms": {
+            "label": "Kwaliteitsdrempel (ms)",
+            "description": "IP's die langzamer zijn dan deze waarde vallen af. 0 behoudt elk IP dat antwoordt."
+          },
+          "local_socks_ports": {
+            "label": "Lokale SOCKS-poorten",
+            "description": "Lokale poorten waarop je tunnelcore luistert, kommagescheiden. Eén poort = één uitgang; meerdere poorten laten de gateway ertussen roteren."
+          },
+          "core_kind": {
+            "label": "Tunnelcore",
+            "description": "none: rapporteert alleen IP's, geen lokale poorten verwacht. static: je start de core en koppelt elke lokale poort zelf aan een eindpunt. singbox: de gateway schakelt het actieve eindpunt via de Clash-API van de core."
+          },
+          "protocols": {
+            "label": "Protocollen",
+            "description": "Te behouden protocollen, kommagescheiden, bijv. vless,vmess,ss,trojan."
+          },
+          "region_include": {
+            "label": "Te behouden regio's",
+            "description": "Kommagescheiden regio-/naamfragmenten. Leeg behoudt alles."
+          },
+          "region_exclude": {
+            "label": "Te schrappen regio's",
+            "description": "Kommagescheiden regio-/naamfragmenten om uit te sluiten."
+          },
+          "probe_count": {
+            "label": "Meetstalen",
+            "description": "Aantal verbindingspogingen per IP; de mediaan wordt gebruikt."
+          },
+          "probe_timeout_ms": {
+            "label": "Testtimeout (ms)",
+            "description": "Verbindingstimeout per staal. IP's die nooit antwoorden worden verwijderd."
+          },
+          "subscription_base_url": {
+            "label": "Abonnementsbasis-URL",
+            "description": "Optioneel. Een kale token uit de regel Abonnementen wordt aan deze URL gehangen, dus de lijst kan alleen de token bevatten. Leeg laten als elk item al een volledige URL of node-URI is."
+          },
+          "subscription_headers": {
+            "label": "Abonnementsheaders",
+            "description": "Optioneel JSON-object met HTTP-headers bij het ophalen van abonnementen, bijv. {\"Authorization\":\"Bearer …\"}."
+          },
+          "core_api_url": {
+            "label": "Core-HTTP-API",
+            "description": "Basis-URL van de besturings-API van de core, bijv. http://127.0.0.1:9090."
+          },
+          "core_api_token": {
+            "label": "Core-API-geheim",
+            "description": "Optioneel bearer-token voor de besturings-API van de core."
+          },
+          "core_group": {
+            "label": "Core-selectiegroep",
+            "description": "Proxygroep of outbound-tag waarop het eindpunt wordt omgeschakeld."
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "VPN-ondersteuning"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "VPN-ondersteuning",
+            "blocks": {
+              "0": {
+                "text": "Status"
+              },
+              "3": {
+                "text": "Eindpunten"
+              },
+              "6": {
+                "text": "Hoe het werkt"
+              },
+              "7": {
+                "items": [
+                  "De uitgangsmodus bepaalt waar deze IP's staan: met de eigen bronadressen van de provider (rotate), erachter (fallback) of ervoor (vpn_only).",
+                  "Abonnementen worden op het auto-ophaalinterval opnieuw gelezen, dus verlopen eindpunten worden automatisch vervangen.",
+                  "De instellingen staan onder Instellingen → Extensies → VPN-ondersteuning."
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Catppuccin Mocha-dashboardthema (donkere en lichte varianten)",
+      "description": "Dashboardthema met het Catppuccin Mocha-palet en een passende lichte Latte-variant. Accent-, achtergrond-, oppervlakte-, tekst- en randkleuren zijn aanpasbaar.",
+      "ui": {
+        "help": "Pas deze extensie toe om het dashboardthema te wisselen. Schakel hem uit om terug te keren.",
+        "fields": {
+          "accent": {
+            "label": "Accent"
+          },
+          "--bg": {
+            "label": "Achtergrond"
+          },
+          "--bg-surface": {
+            "label": "Oppervlakte"
+          },
+          "--text": {
+            "label": "Tekst"
+          },
+          "--border": {
+            "label": "Rand"
+          },
+          "--radius-sm": {
+            "label": "Radius"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Catppuccin Frappé-dashboardthema (donkere en lichte varianten)",
+      "description": "Dashboardthema met het Catppuccin Frappé-palet en een passende lichte Latte-variant. Accent-, achtergrond-, oppervlakte-, tekst- en randkleuren zijn aanpasbaar.",
+      "ui": {
+        "help": "Pas deze extensie toe om het dashboardthema te wisselen. Schakel hem uit om terug te keren.",
+        "fields": {
+          "accent": {
+            "label": "Accent"
+          },
+          "--bg": {
+            "label": "Achtergrond"
+          },
+          "--bg-surface": {
+            "label": "Oppervlakte"
+          },
+          "--text": {
+            "label": "Tekst"
+          },
+          "--border": {
+            "label": "Rand"
+          },
+          "--radius-sm": {
+            "label": "Radius"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Catppuccin Macchiato-dashboardthema (donkere en lichte varianten)",
+      "description": "Dashboardthema met het Catppuccin Macchiato-palet en een passende lichte Latte-variant. Accent-, achtergrond-, oppervlakte-, tekst- en randkleuren zijn aanpasbaar.",
+      "ui": {
+        "help": "Pas deze extensie toe om het dashboardthema te wisselen. Schakel hem uit om terug te keren.",
+        "fields": {
+          "accent": {
+            "label": "Accent"
+          },
+          "--bg": {
+            "label": "Achtergrond"
+          },
+          "--bg-surface": {
+            "label": "Oppervlakte"
+          },
+          "--text": {
+            "label": "Tekst"
+          },
+          "--border": {
+            "label": "Rand"
+          },
+          "--radius-sm": {
+            "label": "Radius"
+          }
+        }
+      }
+    }
+  }
+}

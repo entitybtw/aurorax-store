@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-zh-tw",
+  "name": "繁體中文",
+  "tagline": "AuroraX 擴充功能繁體中文語言包",
+  "description": "語言包：翻譯 AuroraX Store 目錄中擴充功能的名稱、簡介、說明文字、設定標籤與頁面。",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "zh-tw",
+  "catalog": {
+    "opencode": {
+      "name": "OpenCode 模擬",
+      "tagline": "OpenCode 模擬設定檔 — 提供者類型、標頭、工具",
+      "description": "加入可選的 CLI 提供者類型，注入其工具類型並模擬上游 CLI 用戶端（標頭與完整工具架構）。適用於免費方案流量與付費的 API 金鑰流量；免費方案要求工作階段標頭剛好 26 個十六進位字元。裝置流授權位於獨立擴充功能 opencode-oauth。",
+      "ui": {
+        "help": "安裝可選的提供者類型、標頭與工具。若需要裝置流授權，請另行加入 OpenCode OAuth。"
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "可選提供者類型的 OAuth 裝置流",
+      "description": "為可選提供者類型接上 OAuth 裝置流（伺服器、client_id、驗證基礎）。僅提供 oauth 功能。請同時安裝 opencode CLI 擴充功能以取得提供者類型、標頭、工具與用戶端簽章。",
+      "ui": {
+        "help": "為可選提供者類型接上 OAuth 裝置流。不含標頭與工具 — 請與 opencode CLI 擴充功能搭配使用。"
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — 適用 Claude 提供者的 authorization-code + PKCE",
+      "description": "為 Claude 提供者類型接上 Claude OAuth 2.0 authorization-code + PKCE（authorize_url、token_url、client_id、Claude 範圍）。僅提供 oauth 功能。請同時安裝對應的提供者類型擴充功能以取得標頭、工具與用戶端簽章。端點與範圍由本 JSON 提供 — 閘道不做硬編碼。",
+      "ui": {
+        "help": "適用 Claude 提供者的 Claude OAuth 2.0 authorization-code + PKCE。端點來自本擴充功能 — 沒有硬編碼的核心來源。"
+      }
+    },
+    "vpn-support": {
+      "name": "VPN 支援",
+      "tagline": "為所選提供者提供的訂閱 VPN 端點",
+      "description": "將 VPN 端點加入你列出的提供者或池的出站集合。貼上訂閱（或節點 URI），選擇保留多少 IP 與如何使用，其餘交給閘道：下載訂閱、解析每個端點、驗證、保留最佳的、捨棄不再回應的，並按設定間隔重複，因此過期訂閱會自動更換。每個端點清單可同時綁定多個提供者或池。本擴充功能僅提供自身的執行環境與 UI 附加元件 — 不需要閘道程式碼即可運作。",
+      "ui": {
+        "help": "貼上訂閱，選擇保留多少 IP，決定它們在出站輪替中的位置，並列出適用的提供者或池（以逗號分隔）。其餘皆使用可運作的預設值。",
+        "fields": {
+          "subscriptions": {
+            "label": "訂閱",
+            "description": "每行一個：訂閱 URL、原樣的節點 URI，或在設有訂閱基礎 URL 時僅填金鑰。"
+          },
+          "node_count": {
+            "label": "保留 IP 數",
+            "description": "保留多少個已驗證的 IP。0 保留全部。"
+          },
+          "egress_mode": {
+            "label": "出站模式",
+            "description": "rotate — 與提供者自身來源位址並用。fallback — 僅在其失敗或限速之後。vpn_only — 先這些，最後來源位址。"
+          },
+          "apply_to": {
+            "label": "提供者與池",
+            "description": "以逗號分隔的提供者或池名稱，如 opencode-zen, backup。* 表示全部。"
+          },
+          "refresh_interval_minutes": {
+            "label": "自動抓取間隔（分鐘）",
+            "description": "重新讀取訂閱與重新驗證 IP 的頻率，以分鐘計。0 關閉。"
+          },
+          "node_order": {
+            "label": "選擇順序",
+            "description": "依延遲排序已驗證的 IP：最佳優先、最差優先或隨機。"
+          },
+          "quality_max_ms": {
+            "label": "品質門檻（ms）",
+            "description": "慢於此值的 IP 會被捨棄。0 保留所有回應的 IP。"
+          },
+          "local_socks_ports": {
+            "label": "本地 SOCKS 埠",
+            "description": "隧道核心監聽的本地埠，以逗號分隔。一個埠 = 一個出站；多個埠讓閘道在之間輪替。"
+          },
+          "core_kind": {
+            "label": "隧道核心",
+            "description": "none：僅報告 IP，不預期本地埠。static：你自己啟動核心並手動將每個本地埠對應到端點。singbox：閘道透過核心的 Clash API 切換活動端點。"
+          },
+          "protocols": {
+            "label": "協定",
+            "description": "要保留的協定，以逗號分隔，如 vless,vmess,ss,trojan。"
+          },
+          "region_include": {
+            "label": "保留地區",
+            "description": "地區名稱的包含片段，以逗號分隔。留空保留全部。"
+          },
+          "region_exclude": {
+            "label": "排除地區",
+            "description": "要排除的地區名稱片段，以逗號分隔。"
+          },
+          "probe_count": {
+            "label": "探測次數",
+            "description": "每個 IP 的連線嘗試次數；取中位數。"
+          },
+          "probe_timeout_ms": {
+            "label": "探測逾時（ms）",
+            "description": "每次嘗試的連線逾時。從未回應的 IP 會被移除。"
+          },
+          "subscription_base_url": {
+            "label": "訂閱基礎 URL",
+            "description": "選填。訂閱行中的裸金鑰會附加到此 URL，因此清單中可只放金鑰。若每項已是完整 URL 或節點 URI，請留空。"
+          },
+          "subscription_headers": {
+            "label": "訂閱標頭",
+            "description": "取得訂閱時傳送的選填 HTTP 標頭 JSON 物件，如 {\"Authorization\":\"Bearer …\"}。"
+          },
+          "core_api_url": {
+            "label": "核心 HTTP API",
+            "description": "核心控制 API 的基礎 URL，如 http://127.0.0.1:9090。"
+          },
+          "core_api_token": {
+            "label": "核心 API 機密",
+            "description": "核心控制 API 的選填 Bearer 金鑰。"
+          },
+          "core_group": {
+            "label": "核心選擇器群組",
+            "description": "端點在其上切換的代理群組或出站標籤。"
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "VPN 支援"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "VPN 支援",
+            "blocks": {
+              "0": {
+                "text": "狀態"
+              },
+              "3": {
+                "text": "端點"
+              },
+              "6": {
+                "text": "運作方式"
+              },
+              "7": {
+                "items": [
+                  "出站模式決定這些 IP 的位置：與提供者自身來源位址並用（rotate）、在其之後（fallback）或在其之前（vpn_only）。",
+                  "訂閱會依自動抓取間隔重新讀取，因此過期端點會自動更換。",
+                  "設定位於 設定 → 擴充功能 → VPN 支援。"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Catppuccin Mocha 儀表板主題（深色與淺色變體）",
+      "description": "基於 Catppuccin Mocha 配色與配套淺色 Latte 變體的儀表板主題。可編輯強調色、背景、表面、文字與框線顏色。",
+      "ui": {
+        "help": "套用此擴充功能以更換儀表板主題。停用即可還原。",
+        "fields": {
+          "accent": {
+            "label": "強調色"
+          },
+          "--bg": {
+            "label": "背景"
+          },
+          "--bg-surface": {
+            "label": "表面"
+          },
+          "--text": {
+            "label": "文字"
+          },
+          "--border": {
+            "label": "框線"
+          },
+          "--radius-sm": {
+            "label": "圓角"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Catppuccin Frappé 儀表板主題（深色與淺色變體）",
+      "description": "基於 Catppuccin Frappé 配色與配套淺色 Latte 變體的儀表板主題。可編輯強調色、背景、表面、文字與框線顏色。",
+      "ui": {
+        "help": "套用此擴充功能以更換儀表板主題。停用即可還原。",
+        "fields": {
+          "accent": {
+            "label": "強調色"
+          },
+          "--bg": {
+            "label": "背景"
+          },
+          "--bg-surface": {
+            "label": "表面"
+          },
+          "--text": {
+            "label": "文字"
+          },
+          "--border": {
+            "label": "框線"
+          },
+          "--radius-sm": {
+            "label": "圓角"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Catppuccin Macchiato 儀表板主題（深色與淺色變體）",
+      "description": "基於 Catppuccin Macchiato 配色與配套淺色 Latte 變體的儀表板主題。可編輯強調色、背景、表面、文字與框線顏色。",
+      "ui": {
+        "help": "套用此擴充功能以更換儀表板主題。停用即可還原。",
+        "fields": {
+          "accent": {
+            "label": "強調色"
+          },
+          "--bg": {
+            "label": "背景"
+          },
+          "--bg-surface": {
+            "label": "表面"
+          },
+          "--text": {
+            "label": "文字"
+          },
+          "--border": {
+            "label": "框線"
+          },
+          "--radius-sm": {
+            "label": "圓角"
+          }
+        }
+      }
+    }
+  }
+}

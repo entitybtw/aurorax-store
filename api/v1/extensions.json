@@ -55,6 +55,166 @@
       "type": "theme",
       "version": "3",
       "author": "aurora"
+    },
+    {
+      "id": "locale-ru",
+      "name": "Русский язык",
+      "tagline": "Переводы расширений AuroraX на русский",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-uk",
+      "name": "Українська мова",
+      "tagline": "Переклади розширень AuroraX українською",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-de",
+      "name": "Deutsche Sprache",
+      "tagline": "Erweiterungen von AuroraX auf Deutsch",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-fr",
+      "name": "Français",
+      "tagline": "Extensions AuroraX en français",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-es",
+      "name": "Español",
+      "tagline": "Extensiones de AuroraX en español",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-pt-br",
+      "name": "Português (Brasil)",
+      "tagline": "Extensões do AuroraX em português",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-it",
+      "name": "Italiano",
+      "tagline": "Estensioni di AuroraX in italiano",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-pl",
+      "name": "Język polski",
+      "tagline": "Rozszerzenia AuroraX po polsku",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-nl",
+      "name": "Nederlands",
+      "tagline": "AuroraX-extensies in het Nederlands",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-cs",
+      "name": "Čeština",
+      "tagline": "Rozšíření AuroraX v češtině",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-tr",
+      "name": "Türkçe",
+      "tagline": "AuroraX uzantıları Türkçe",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-ja",
+      "name": "日本語",
+      "tagline": "AuroraX 拡張の日本語パック",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-zh-cn",
+      "name": "简体中文",
+      "tagline": "AuroraX 扩展简体中文语言包",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-zh-tw",
+      "name": "繁體中文",
+      "tagline": "AuroraX 擴充功能繁體中文語言包",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-ko",
+      "name": "한국어",
+      "tagline": "AuroraX 확장 한국어 언어 팩",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-ar",
+      "name": "العربية",
+      "tagline": "امتدادات AuroraX باللغة العربية",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-he",
+      "name": "עברית",
+      "tagline": "תוספי AuroraX בעברית",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-hi",
+      "name": "हिन्दी",
+      "tagline": "AuroraX एक्सटेंशन हिन्दी भाषा पैक",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-id",
+      "name": "Bahasa Indonesia",
+      "tagline": "Ekstensi AuroraX dalam Bahasa Indonesia",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
+    },
+    {
+      "id": "locale-vi",
+      "name": "Tiếng Việt",
+      "tagline": "Tiện ích AuroraX bằng tiếng Việt",
+      "type": "localization",
+      "version": "1",
+      "author": "aurora"
     }
   ]
 }

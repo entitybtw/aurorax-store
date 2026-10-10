@@ -135,8 +135,9 @@ An extension may mix all three:
 | **Theme** | `theme` | Dashboard palette via `ui.theme` / `ui.theme_light` / `ui.theme_dark` |
 | **Preset** | `sidecar` | Sidecar routing, headers, tools, retries, auth endpoints |
 | **Addon** | `sidecar` / `addon` | Optional capabilities via `provides` (`provider_types`, `features`) and `files` |
+| **Localization** | `localization` | Translates other extensions' strings (`locale` + `catalog`); applies without touching sidecar settings |
 
-Gateway-side deep dives: `documentation/extensions/{README,THEMES,PRESETS,ADDONS}.md`
+Gateway-side deep dives: `documentation/extensions/{README,THEMES,PRESETS,ADDONS,LOCALIZATION}.md`
 in the gateway repo.
 
 ### Top-level fields
@@ -150,7 +151,10 @@ in the gateway repo.
 | `description` | string | Long description |
 | `author` | string | Author / team |
 | `homepage` | string | Project URL |
-| `type` | string | `sidecar` or `theme` |
+| `type` | string | `sidecar`, `theme` or `localization` |
+| `locale` | string | Localization packs only: BCP-47-ish code of the pack (`ru`, `pt-br`, `zh-cn`, …) |
+| `catalog` | object | Localization packs only: `{ "<ext-id>": { name?, tagline?, description?, ui?, … } } translations keyed by target extension id |
+| `i18n` | object | Optional embedded translations: `{ "locales": { "<code>": { name?, tagline?, description?, ui?, blocks? } } }` |
 | `base_url` | string | Sidecar base URL on apply |
 | `user_agent` | string | Optional UA override |
 | `default_auth` | string | Default `Authorization` scheme |
@@ -217,6 +221,60 @@ Icons are whitelisted: `layout`, `box`, `layers`, `network`, `database`,
 `terminal`, `settings`, `shield`, `key`, `workflow`, `book`, `puzzle`,
 `plugin`, `message`, …
 
+### Localization (`type: "localization"`)
+
+A language pack translates *other* extensions — it ships no sidecar settings of
+its own, and applying one **does not touch** `base_url`, headers, auth,
+profiles or the active theme:
+
+```json
+{
+  "schema": 1,
+  "id": "locale-ru",
+  "name": "Русский язык",
+  "tagline": "Переводы расширений AuroraX на русский",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "ru",
+  "catalog": {
+    "vpn-support": {
+      "name": "Поддержка VPN",
+      "tagline": "…",
+      "description": "…",
+      "ui": {
+        "help": "…",
+        "fields": { "egress_mode": { "label": "…", "description": "…" } },
+        "widgets": { "vpn-support-widget": { "title": "…" } },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "…",
+            "blocks": { "0": { "text": "…" }, "7": { "items": ["…", "…", "…"] } }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": { "tagline": "…", "description": "…" }
+  }
+}
+```
+
+Rules:
+
+- `catalog` is keyed by the **target extension id**; each entry mirrors that
+  extension's manifest shape (`name`, `tagline`, `description`, `ui.help`,
+  field / widget / nav / banner / page / settings-tab labels, block `text` and
+  block `items`). Block keys are **decimal indices into the source array**; list
+  `items` are replaced wholesale per index.
+- Several packs may be active **at the same time** (unlike themes). Applied
+  packs override embedded `i18n.locales.<code>` strings; among packs the last
+  one wins (`order` ascending, then `id` ascending).
+- The active locale is chosen in **Settings → Extensions → Languages** (or per
+  request with `?locale=`). Resolution: exact code → bare base language
+  (`pt-BR` → `pt`) → single region variant → `zh` prefers `zh-cn` → source text.
+- The full spec lives in the gateway repo:
+  `documentation/extensions/LOCALIZATION.md`.
+
 ---
 
 ## Bundled extensions
@@ -279,6 +337,26 @@ switch picks the matching palette from the same installed theme. Editable color
 fields (accent, background, surface, text, border, radius) live under
 `ui.fields`.
 
+### Language packs
+
+`type: "localization"` packs (`locale-*`) translating the bundled extensions
+above — names, taglines, descriptions, help texts, field / widget /
+settings-tab labels and page blocks. Install several at once, then pick the
+active language in **Settings → Extensions → Languages**:
+
+| id | language | id | language |
+|----|----------|----|----------|
+| `locale-ru` | Русский | `locale-ja` | 日本語 |
+| `locale-uk` | Українська | `locale-zh-cn` | 简体中文 |
+| `locale-de` | Deutsch | `locale-zh-tw` | 繁體中文 |
+| `locale-fr` | Français | `locale-ko` | 한국어 |
+| `locale-es` | Español | `locale-ar` | العربية |
+| `locale-pt-br` | Português (Brasil) | `locale-he` | עברית |
+| `locale-it` | Italiano | `locale-hi` | हिन्दी |
+| `locale-pl` | Polski | `locale-id` | Bahasa Indonesia |
+| `locale-nl` | Nederlands | `locale-vi` | Tiếng Việt |
+| `locale-cs` | Čeština | `locale-tr` | Türkçe |
+
 ---
 
 ## Hosting & API
@@ -307,4 +385,5 @@ api/v1/extensions.json     # GET /api/v1/extensions.json
 extensions/
   {id}.extension.json        # emulation / auth extensions
   theme-*.extension.json     # theme extensions (pure UI)
+  locale-*.extension.json    # language packs (type: "localization")
 ```

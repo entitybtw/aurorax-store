@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "id": "locale-ko",
+  "name": "한국어",
+  "tagline": "AuroraX 확장 한국어 언어 팩",
+  "description": "언어 팩: AuroraX Store 카탈로그의 확장 이름, 설명, 도움말, 설정 레이블과 페이지를 번역합니다.",
+  "author": "aurora",
+  "version": "1",
+  "type": "localization",
+  "locale": "ko",
+  "catalog": {
+    "opencode": {
+      "name": "OpenCode 에뮬레이션",
+      "tagline": "OpenCode 에뮬레이션 프로필 — 공급자 유형, 헤더, 도구",
+      "description": "선택적 CLI 공급자 유형을 추가하고, 도구 유형을 주입하며, 업스트림 CLI 클라이언트를 에뮬레이션합니다(헤더 및 전체 도구 스키마). 무료 요금제 트래픽과 API 키가 있는 유료 트래픽 모두에서 작동합니다. 무료 요금제는 세션 헤더가 정확히 26자리 16진수여야 합니다. device-flow 인증은 별도 확장 opencode-oauth에 있습니다.",
+      "ui": {
+        "help": "선택적 공급자 유형, 헤더, 도구를 설치합니다. device-flow 인증이 필요하면 OpenCode OAuth를 따로 추가하세요."
+      }
+    },
+    "opencode-oauth": {
+      "tagline": "선택적 공급자 유형용 OAuth device-flow",
+      "description": "선택적 공급자 유형의 OAuth device-flow 배선(서버, client_id, 검증 베이스). oauth 기능만 제공합니다. 공급자 유형, 헤더, 도구, 클라이언트 서명을 위해 opencode CLI 확장을 함께 설치하세요.",
+      "ui": {
+        "help": "선택적 공급자 유형에 OAuth device-flow를 배선합니다. 헤더와 도구 없음 — opencode CLI 확장과 결합하세요."
+      }
+    },
+    "claude-oauth": {
+      "tagline": "Claude OAuth 2.0 — Claude 공급자용 authorization-code + PKCE",
+      "description": "Claude 공급자 유형에 Claude OAuth 2.0 authorization-code + PKCE(authorize_url, token_url, client_id, Claude 스코프)를 배선합니다. oauth 기능만 제공합니다. 헤더, 도구, 클라이언트 서명을 위해 해당 공급자 유형 확장을 함께 설치하세요. 엔드포인트와 스코프는 이 JSON이 제공하며 게이트웨이에 하드코딩된 값은 없습니다.",
+      "ui": {
+        "help": "Claude 공급자용 Claude OAuth 2.0 authorization-code + PKCE. 엔드포인트는 이 확장에서 옵니다 — 코어 오리진 하드코딩 없음."
+      }
+    },
+    "vpn-support": {
+      "name": "VPN 지원",
+      "tagline": "선택한 공급자를 위한 구독 VPN 엔드포인트",
+      "description": "나열한 공급자 또는 풀의 아웃바운드 집합에 VPN 엔드포인트를 추가하세요. 구독(또는 노드 URI)을 붙여넣고 유지할 IP 개수와 사용 방식을 선택하면 나머지는 게이트웨이가 처리합니다: 구독을 가져오고, 각 엔드포인트를 파싱·검증해 최고만 유지하고 응답하지 않는 것은 버리며, 설정한 간격으로 반복하므로 만료된 구독은 자동으로 교체됩니다. 각 엔드포인트 목록은 여러 공급자나 풀에 동시에 연결할 수 있습니다. 이 확장은 자체 런타임과 UI 애드온만 제공하며 작동에 게이트웨이 코드가 필요 없습니다.",
+      "ui": {
+        "help": "구독을 붙여넣고, 유지할 IP 개수를 선택하고, 아웃바운드 로테이션에서의 자리를 정하고, 적용될 공급자나 풀을 쉼표로 구분해 나열하세요. 나머지는 모두 작동하는 기본값입니다.",
+        "fields": {
+          "subscriptions": {
+            "label": "구독",
+            "description": "줄당 하나: 구독 URL, 그대로의 노드 URI, 또는 구독 기본 URL이 설정된 경우 토큰만."
+          },
+          "node_count": {
+            "label": "유지할 IP 수",
+            "description": "검증된 IP를 몇 개 유지할지. 0은 전부 유지."
+          },
+          "egress_mode": {
+            "label": "아웃바운드 모드",
+            "description": "rotate — 공급자 자체 소스 주소와 함께. fallback — 실패 또는 제한 이후에만. vpn_only — 먼저 이것들, 마지막에 소스 주소."
+          },
+          "apply_to": {
+            "label": "공급자와 풀",
+            "description": "쉼표로 구분한 공급자 또는 풀 이름, 예: opencode-zen, backup. *는 어디에나 적용."
+          },
+          "refresh_interval_minutes": {
+            "label": "자동 가져오기 간격(분)",
+            "description": "구독을 다시 읽고 IP를 다시 검증하는 빈도(분). 0이면 꺼짐."
+          },
+          "node_order": {
+            "label": "선택 순서",
+            "description": "검증된 IP를 지연시간 기준으로 정렬: 최저 우선, 최악 우선, 무작위."
+          },
+          "quality_max_ms": {
+            "label": "품질 임계값(ms)",
+            "description": "이 값보다 느린 IP는 버려짐. 0은 응답하는 모든 IP 유지."
+          },
+          "local_socks_ports": {
+            "label": "로컬 SOCKS 포트",
+            "description": "터널 코어가 듣는 로컬 포트, 쉼표 구분. 포트 하나 = 아웃바운드 하나; 여러 포트면 게이트웨이가 그 사이에서 로테이션."
+          },
+          "core_kind": {
+            "label": "터널 코어",
+            "description": "none: IP만 보고하며 로컬 포트를 기다리지 않음. static: 코어를 직접 실행하고 각 로컬 포트를 직접 엔드포인트에 매핑. singbox: 게이트웨이가 코어의 Clash API로 활성 엔드포인트를 전환."
+          },
+          "protocols": {
+            "label": "프로토콜",
+            "description": "유지할 프로토콜, 쉼표 구분, 예: vless,vmess,ss,trojan."
+          },
+          "region_include": {
+            "label": "유지할 지역",
+            "description": "지역 이름의 포함 조각, 쉼표 구분. 비워두면 전부 유지."
+          },
+          "region_exclude": {
+            "label": "제외할 지역",
+            "description": "제외할 지역 이름 조각, 쉼표 구분."
+          },
+          "probe_count": {
+            "label": "탐지 횟수",
+            "description": "IP당 연결 시도 횟수; 중앙값 사용."
+          },
+          "probe_timeout_ms": {
+            "label": "탐지 타임아웃(ms)",
+            "description": "시도당 연결 타임아웃. 응답하지 않는 IP는 제거."
+          },
+          "subscription_base_url": {
+            "label": "구독 기본 URL",
+            "description": "선택. 구독 줄의 토큰이 이 URL에 붙으므로 목록에 토큰만 둘 수 있음. 각 항목이 이미 전체 URL 또는 노드 URI라면 비워두세요."
+          },
+          "subscription_headers": {
+            "label": "구독 헤더",
+            "description": "구독을 가져올 때 보낼 선택적 HTTP 헤더 JSON 개체, 예: {\"Authorization\":\"Bearer …\"}."
+          },
+          "core_api_url": {
+            "label": "코어 HTTP API",
+            "description": "코어 제어 API의 기본 URL, 예: http://127.0.0.1:9090."
+          },
+          "core_api_token": {
+            "label": "코어 API 시크릿",
+            "description": "코어 제어 API용 선택적 Bearer 토큰."
+          },
+          "core_group": {
+            "label": "코어 선택기 그룹",
+            "description": "엔드포인트가 전환되는 프록시 그룹 또는 아웃바운드 태그."
+          }
+        },
+        "widgets": {
+          "vpn-support-widget": {
+            "title": "VPN 지원"
+          }
+        },
+        "settings_tabs": {
+          "vpn-support": {
+            "label": "VPN 지원",
+            "blocks": {
+              "0": {
+                "text": "상태"
+              },
+              "3": {
+                "text": "엔드포인트"
+              },
+              "6": {
+                "text": "작동 방식"
+              },
+              "7": {
+                "items": [
+                  "아웃바운드 모드는 이 IP들의 자리를 정합니다: 공급자 자체 소스 주소와 함께(rotate), 그 뒤(fallback), 또는 그 앞(vpn_only).",
+                  "구독은 자동 가져오기 간격으로 다시 읽으므로 만료된 엔드포인트는 자동으로 교체됩니다.",
+                  "설정은 설정 → 확장 → VPN 지원에 있습니다."
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "theme-catppuccin-mocha": {
+      "tagline": "Catppuccin Mocha 대시보드 테마(다크·라이트 변형)",
+      "description": "Catppuccin Mocha 팔레트와 어울리는 라이트 Latte 변형의 대시보드 테마. 강조색, 배경, 표면, 테두리 색을 편집할 수 있습니다.",
+      "ui": {
+        "help": "이 확장을 적용하면 대시보드 테마가 바뀝니다. 비활성화하면 되돌아갑니다.",
+        "fields": {
+          "accent": {
+            "label": "강조색"
+          },
+          "--bg": {
+            "label": "배경"
+          },
+          "--bg-surface": {
+            "label": "표면"
+          },
+          "--text": {
+            "label": "텍스트"
+          },
+          "--border": {
+            "label": "테두리"
+          },
+          "--radius-sm": {
+            "label": "모서리 반경"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-frappe": {
+      "tagline": "Catppuccin Frappé 대시보드 테마(다크·라이트 변형)",
+      "description": "Catppuccin Frappé 팔레트와 어울리는 라이트 Latte 변형의 대시보드 테마. 강조색, 배경, 표면, 테두리 색을 편집할 수 있습니다.",
+      "ui": {
+        "help": "이 확장을 적용하면 대시보드 테마가 바뀝니다. 비활성화하면 되돌아갑니다.",
+        "fields": {
+          "accent": {
+            "label": "강조색"
+          },
+          "--bg": {
+            "label": "배경"
+          },
+          "--bg-surface": {
+            "label": "표면"
+          },
+          "--text": {
+            "label": "텍스트"
+          },
+          "--border": {
+            "label": "테두리"
+          },
+          "--radius-sm": {
+            "label": "모서리 반경"
+          }
+        }
+      }
+    },
+    "theme-catppuccin-macchiato": {
+      "tagline": "Catppuccin Macchiato 대시보드 테마(다크·라이트 변형)",
+      "description": "Catppuccin Macchiato 팔레트와 어울리는 라이트 Latte 변형의 대시보드 테마. 강조색, 배경, 표면, 테두리 색을 편집할 수 있습니다.",
+      "ui": {
+        "help": "이 확장을 적용하면 대시보드 테마가 바뀝니다. 비활성화하면 되돌아갑니다.",
+        "fields": {
+          "accent": {
+            "label": "강조색"
+          },
+          "--bg": {
+            "label": "배경"
+          },
+          "--bg-surface": {
+            "label": "표면"
+          },
+          "--text": {
+            "label": "텍스트"
+          },
+          "--border": {
+            "label": "테두리"
+          },
+          "--radius-sm": {
+            "label": "모서리 반경"
+          }
+        }
+      }
+    }
+  }
+}
