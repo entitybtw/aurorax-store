@@ -3,8 +3,8 @@
   "id": "opencode",
   "name": "OpenCode Emulation",
   "tagline": "OpenCode emulation profile — provider type, headers, tools",
-  "description": "Adds the optional CLI provider type, injects its tool types, and emulates the upstream CLI client (headers and full tool schema). Works for both free-tier and paid/API-key traffic; the free tier requires the session header to be exactly 26 hex characters. Device-flow authorization lives in the separate opencode-oauth extension.",
-  "version": "3",
+  "description": "Adds the optional CLI provider type, injects its tool types, and emulates the upstream CLI client (headers and full tool schema). Works for both free-tier and paid/API-key traffic. The free tier requires the session headers to carry a real OpenCode id: ses_ + 12 hex characters encoding the current time + 14 base62 characters (charset: opencode). Device-flow authorization lives in the separate opencode-oauth extension.",
+  "version": "4",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
@@ -14,8 +14,8 @@
       "cli-emulation"
     ]
   },
-  "base_url": "https://opencode.ai/zen/v1",
-  "user_agent": "opencode/1.18.33 ai-sdk/provider-utils/4.0.23 runtime/bun/1.3.14",
+  "base_url": "https://opencode.ai/inference/v1",
+  "user_agent": "opencode/latest/2.0.22/cli",
   "default_auth": "Bearer public",
   "inject_tools": true,
   "inject_tool_types": [
@@ -30,19 +30,33 @@
       "mode": "map_or_generate",
       "prefix": "ses_",
       "length": 26,
-      "charset": "hex"
+      "charset": "opencode"
+    },
+    {
+      "name": "x-opencode-session-id",
+      "mode": "map_or_generate",
+      "prefix": "ses_",
+      "length": 26,
+      "charset": "opencode"
+    },
+    {
+      "name": "x-session-affinity",
+      "mode": "map_or_generate",
+      "prefix": "ses_",
+      "length": 26,
+      "charset": "opencode"
+    },
+    {
+      "name": "x-session-id",
+      "mode": "map_or_generate",
+      "prefix": "ses_",
+      "length": 26,
+      "charset": "opencode"
     },
     {
       "name": "x-opencode-client",
       "mode": "static",
       "value": "cli"
-    },
-    {
-      "name": "x-opencode-request",
-      "mode": "generate",
-      "prefix": "msg_",
-      "length": 26,
-      "charset": "hex"
     },
     {
       "name": "x-opencode-project",
@@ -57,15 +71,16 @@
     }
   ],
   "settings": {
-    "forward_headers": "[\"x-opencode-session\",\"x-opencode-client\",\"x-opencode-request\",\"x-opencode-project\"]",
+    "forward_headers": "[\"x-opencode-session\", \"x-opencode-session-id\", \"x-session-affinity\", \"x-session-id\", \"x-opencode-client\", \"x-opencode-project\"]",
     "sidecar_url": "http://127.0.0.1:8090/v1"
   },
   "requirements": [
-    "x-opencode-session must be ses_ followed by exactly 26 hex characters",
-    "x-opencode-request must be msg_ followed by 26 hex characters"
+    "session headers must be ses_ followed by exactly 26 characters: 12 hex encoding the current time (charset 'opencode' generates these) then 14 base62 characters",
+    "a plain random hex id is rejected upstream with FreeTierError even though the shape matches"
   ],
   "notes": [
     "Tool injection is scoped to providers of type opencode.",
+    "Session ids use charset 'opencode' because the upstream decodes the first 12 hex characters back to a timestamp and only accepts ids that resolve to a recent time.",
     "Review third-party extensions before installing them from a store."
   ],
   "ui": {
