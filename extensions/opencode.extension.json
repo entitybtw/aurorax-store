@@ -3,8 +3,8 @@
   "id": "opencode",
   "name": "OpenCode Emulation",
   "tagline": "OpenCode emulation profile — provider type, headers, tools",
-  "description": "Adds the optional CLI provider type, injects its tool types, and emulates the upstream CLI client (headers and full tool schema). Works for both free-tier and paid/API-key traffic. The free tier requires the session headers to carry a real OpenCode id: ses_ + 12 hex characters encoding the current time + 14 base62 characters (charset: opencode). Device-flow authorization lives in the separate opencode-oauth extension.",
-  "version": "4",
+  "description": "Adds the optional CLI provider type, injects its tool types, and emulates the upstream CLI client (headers and full tool schema). Works for both free-tier and paid/API-key traffic. The free tier requires the session headers to carry a real OpenCode id: ses_ + 12 hex characters encoding the current time + 14 base62 characters (charset: timestamped). Device-flow authorization lives in the separate opencode-oauth extension.",
+  "version": "5",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
@@ -30,28 +30,28 @@
       "mode": "map_or_generate",
       "prefix": "ses_",
       "length": 26,
-      "charset": "opencode"
+      "charset": "timestamped"
     },
     {
       "name": "x-opencode-session-id",
       "mode": "map_or_generate",
       "prefix": "ses_",
       "length": 26,
-      "charset": "opencode"
+      "charset": "timestamped"
     },
     {
       "name": "x-session-affinity",
       "mode": "map_or_generate",
       "prefix": "ses_",
       "length": 26,
-      "charset": "opencode"
+      "charset": "timestamped"
     },
     {
       "name": "x-session-id",
       "mode": "map_or_generate",
       "prefix": "ses_",
       "length": 26,
-      "charset": "opencode"
+      "charset": "timestamped"
     },
     {
       "name": "x-opencode-client",
@@ -75,12 +75,12 @@
     "sidecar_url": "http://127.0.0.1:8090/v1"
   },
   "requirements": [
-    "session headers must be ses_ followed by exactly 26 characters: 12 hex encoding the current time (charset 'opencode' generates these) then 14 base62 characters",
+    "session headers must be ses_ followed by exactly 26 characters: 12 hex encoding the current time (charset 'timestamped' generates these) then 14 base62 characters",
     "a plain random hex id is rejected upstream with FreeTierError even though the shape matches"
   ],
   "notes": [
-    "Tool injection is scoped to providers of type opencode.",
-    "Session ids use charset 'opencode' because the upstream decodes the first 12 hex characters back to a timestamp and only accepts ids that resolve to a recent time.",
+    "Tool injection is scoped to providers of type cli-emulation.",
+    "Session ids use charset 'timestamped' because the upstream decodes the first 12 hex characters back to a timestamp and only accepts ids that resolve to a recent time.",
     "Review third-party extensions before installing them from a store."
   ],
   "ui": {
