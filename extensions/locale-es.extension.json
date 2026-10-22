@@ -46,6 +46,10 @@
             "label": "IP a conservar",
             "description": "Cuántas IPs sondeadas conservar. 0 conserva todas."
           },
+          "keep_working_ips": {
+            "label": "Conservar las IP que responden",
+            "description": "off — solo las IP de las suscripciones actuales. pool — las IP que responden se guardan en la lista de trabajo de la propia extensión y se vuelven a comprobar en cada actualización, así que una actualización de la suscripción no las pierde. pin — las IP guardadas además mantienen su sitio en la rotación de salidas y las nuevas solo rellenan los huecos libres."
+          },
           "egress_mode": {
             "label": "Modo de salida",
             "description": "rotate — con las direcciones de origen del proveedor. fallback — solo tras su fallo o límite. vpn_only — primero estas, luego las direcciones de origen."
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "Intervalo de obtención automática (minutos)",
             "description": "Cada cuánto se releen las suscripciones y se revuelven las IP, en minutos. 0 lo desactiva."
+          },
+          "keep_working_max": {
+            "label": "Tamaño de la lista de trabajo",
+            "description": "Cuántas IP guardadas mantiene la lista de trabajo. 0 las mantiene todas."
+          },
+          "keep_working_failures": {
+            "label": "Fallos antes de descartar",
+            "description": "Cuántas actualizaciones seguidas puede no responder una IP guardada antes de salir de la lista de trabajo."
           },
           "node_order": {
             "label": "Orden de selección",
@@ -137,6 +149,7 @@
                 "items": [
                   "El modo de salida decide dónde quedan estas IP: con las direcciones de origen del proveedor (rotate), detrás (fallback) o delante (vpn_only).",
                   "Las suscripciones se releen en el intervalo de obtención automática, así que los puntos finales caducados se reemplazan automáticamente.",
+                  "Conservar las IP que responden guarda en la lista propia de la extensión las IP que respondían: se vuelven a comprobar en cada actualización y una IP a la que la suscripción sustituye sigue funcionando mientras responda.",
                   "Los ajustes están en Ajustes → Extensiones → Soporte VPN."
                 ]
               }

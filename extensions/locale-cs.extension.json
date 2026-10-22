@@ -46,6 +46,10 @@
             "label": "IP k ponechání",
             "description": "Kolik ověřených IP ponechat. 0 ponechá všechny."
           },
+          "keep_working_ips": {
+            "label": "Ponechat fungující IP",
+            "description": "off — pouze IP z aktuálních odběrů. pool — IP, které odpovídají, se ukládají do vlastního pracovního seznamu rozšíření a při každé aktualizaci se znovu kontrolují, takže aktualizace odběru o neztratí. pin — uložené IP si navíc ponechají své místo v rotaci výstupů a nové vyplňují jen volná místa."
+          },
           "egress_mode": {
             "label": "Režim výstupu",
             "description": "rotate — s vlastními zdrojovými adresami poskytovatele. fallback — až po jejich selhání nebo limitu. vpn_only — nejdřív tyto, nakonec zdrojové adresy."
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "Interval automatického načítání (minuty)",
             "description": "Jak často se předplatná znovu čtou a IP znovu ověřují, v minutách. 0 vypne."
+          },
+          "keep_working_max": {
+            "label": "Velikost pracovního seznamu",
+            "description": "Kolik uložených IP pracovní seznam uchovává. 0 uchová všechna."
+          },
+          "keep_working_failures": {
+            "label": "Neúspěchy před odstraněním",
+            "description": "Kolik aktualizací po sobě smí uložené IP neodpovídat, než opustí pracovní seznam."
           },
           "node_order": {
             "label": "Pořadí výběru",
@@ -137,6 +149,7 @@
                 "items": [
                   "Režim výstupu určuje, kde tyto IP leží: s vlastními zdrojovými adresami poskytovatele (rotate), za nimi (fallback) nebo před nimi (vpn_only).",
                   "Předplatná se načítají v intervalu automatického načítání, takže prošlé koncové body se nahradí automaticky.",
+                  "Ponechat fungující IP ukládá IP, které odpovídaly, do vlastního seznamu rozšíření: při každé aktualizaci se znovu zkontrolují a IP, které odběr nahradí, funguje dál, dokud odpovídá.",
                   "Nastavení najdete v Nastavení → Rozšíření → Podpora VPN."
                 ]
               }

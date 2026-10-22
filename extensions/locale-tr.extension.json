@@ -46,6 +46,10 @@
             "label": "Tutulacak IP sayısı",
             "description": "Kaç sınamalı IP tutulacak. 0 hepsini tutar."
           },
+          "keep_working_ips": {
+            "label": "Çalışan IP'leri sakla",
+            "description": "off — yalnızca mevcut aboneliklerdeki IP'ler. pool — yanıt veren IP'ler eklentinin kendi çalışma listesine kaydedilir ve her yenilemede yeniden kontrol edilir; böylece abonelik güncellemesi onları kaybettirmez. pin — kaydedilen IP'ler ayrıca çıkış rotasyonundaki yerlerini korur, yenileri yalnızca boş yerleri doldurur."
+          },
           "egress_mode": {
             "label": "Çıkış modu",
             "description": "rotate — sağlayıcının kendi kaynak adresleriyle. fallback — yalnızca bunlar başarısız olur veya limite takılırsa. vpn_only — önce bunlar, en son kaynak adresleri."
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "Otomatik çekme aralığı (dakika)",
             "description": "Abonemelerin ne sıklıkla yeniden okunacağını ve IP'lerin yeniden yoklanacağını dakika cinsinden. 0 kapatır."
+          },
+          "keep_working_max": {
+            "label": "Çalışma listesi boyutu",
+            "description": "Çalışma listesi kaç kayıtlı IP tutar. 0 hepsini tutar."
+          },
+          "keep_working_failures": {
+            "label": "Silmeden önceki hatalar",
+            "description": "Kayıtlı bir IP çalışma listesinden çıkmadan önce üst üste kaç yenilemede yanıt vermeyebilir."
           },
           "node_order": {
             "label": "Seçim sırası",
@@ -137,6 +149,7 @@
                 "items": [
                   "Çıkış modu bu IP'lerin yerini belirler: sağlayıcının kendi kaynak adresleriyle (rotate), bunların arkasında (fallback) veya önünde (vpn_only).",
                   "Abonemeler otomatik çekme aralığında yeniden okunur, süresi dolan uç noktalar otomatik yenilenir.",
+                  "Çalışan IP'leri sakla, yanıt veren IP'leri eklentinin kendi listesine kaydeder: her yenilemede yeniden kontrol edilirler ve abonelik tarafından değiştirilen bir IP yanıt verdiği sürece çalışmaya devam eder.",
                   "Ayarlar Ayarlar → Uzantılar → VPN Desteği bölümündedir."
                 ]
               }

@@ -46,6 +46,10 @@
             "label": "保留 IP 数",
             "description": "保留多少个已验证的 IP。0 保留全部。"
           },
+          "keep_working_ips": {
+            "label": "保留可用 IP",
+            "description": "off — 仅使用当前订阅中的 IP。pool — 有响应的 IP 会保存在扩展自己的工作列表中，并在每次刷新时重新检测，因此订阅更新也不会丢失它们。pin — 已保存的 IP 还会保留在出口轮换中的位置，新 IP 只填补空出的名额。"
+          },
           "egress_mode": {
             "label": "出站模式",
             "description": "rotate — 与提供方自身源地址并用。fallback — 仅在其失败或限速之后。vpn_only — 先这些，最后源地址。"
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "自动拉取间隔（分钟）",
             "description": "重新读取订阅和重新验证 IP 的频率，以分钟计。0 关闭。"
+          },
+          "keep_working_max": {
+            "label": "工作列表大小",
+            "description": "工作列表保留多少个已保存的 IP。0 表示全部保留。"
+          },
+          "keep_working_failures": {
+            "label": "移除前的失败次数",
+            "description": "已保存的 IP 连续多少次刷新没有响应后离开工作列表。"
           },
           "node_order": {
             "label": "选择顺序",
@@ -137,6 +149,7 @@
                 "items": [
                   "出站模式决定这些 IP 的位置：与提供方自身源地址并用（rotate）、在其之后（fallback）或在其之前（vpn_only）。",
                   "订阅会按自动拉取间隔重新读取，因此过期端点会自动更换。",
+                  "保留可用 IP 会把有响应的 IP 保存在扩展自己的工作列表中：每次刷新都会重新检测，被订阅替换掉的 IP 只要仍有响应就继续可用。",
                   "设置位于 设置 → 扩展 → VPN 支持。"
                 ]
               }

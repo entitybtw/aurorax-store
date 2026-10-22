@@ -9,6 +9,11 @@ package main
 // configured on the provider is up to egress_mode: rotate them together (the
 // default), keep them as the fallback tier, or prefer them exclusively.
 //
+// keep_working_ips adds a memory of its own: the endpoints that answered are
+// saved in the extension's working list, so a subscription update that
+// replaces them does not lose them — every remembered endpoint is re-checked
+// on every refresh and leaves the list only when it stops answering.
+//
 // Everything here runs on the gateway's stdlib only — no external packages.
 // Network work happens on a background goroutine so a pick never blocks a
 // request.
@@ -40,6 +45,19 @@ const (
 	probeWorkers    = 16
 )
 
+// The modes of the working list (keep_working_ips).
+const (
+	// keepOff — only the endpoints the current subscriptions list.
+	keepOff = "off"
+	// keepPool — the endpoints that answered are remembered and re-checked;
+	// they join the pool of candidates, so a subscription update that drops
+	// them does not lose the exit.
+	keepPool = "pool"
+	// keepPin — the remembered endpoints also keep their place in the exit
+	// rotation; the fresh ones only fill the slots left over.
+	keepPin = "pin"
+)
+
 // Endpoint is one remote exit discovered from a subscription.
 type Endpoint struct {
 	ID       string `json:"id"`
@@ -52,10 +70,27 @@ type Endpoint struct {
 	Alive    bool   `json:"alive"`
 }
 
+// Working is an endpoint the extension remembers as working.
+//
+// The working list belongs to the extension, not to the subscription: an
+// endpoint stays in it until it stops answering, even after the provider
+// replaced it. FirstSeen is when it entered the list, LastSeen is when it
+// last answered and Misses counts the refreshes in a row it did not answer.
+type Working struct {
+	Endpoint
+	FirstSeen time.Time `json:"first_seen"`
+	LastSeen  time.Time `json:"last_seen"`
+	Misses    int       `json:"misses"`
+}
+
 // State is persisted next to the addon so it survives reloads.
 type State struct {
 	LastRefresh time.Time  `json:"last_refresh"`
 	Endpoints   []Endpoint `json:"endpoints"`
+	// Working is the extension's own list of the endpoints that answered.
+	// It survives subscription updates: an IP leaves it only when it stops
+	// answering.
+	Working []Working `json:"working,omitempty"`
 	// Selected are the display names of the kept endpoints, in the order the
 	// exits use them. SelectedKeys carries the matching identities
 	// (protocol|host|port) so two endpoints sharing one label stay two
@@ -239,8 +274,8 @@ func OnInit(raw string) string {
 	loadState(p.Dir)
 	mu.Lock()
 	defer mu.Unlock()
-	return fmt.Sprintf(`{"ok":true,"endpoints":%d,"selected":%d,"refreshed":%s}`,
-		len(st.Endpoints), len(st.Selected), quote(st.LastRefresh.Format(time.RFC3339)))
+	return fmt.Sprintf(`{"ok":true,"endpoints":%d,"selected":%d,"remembered":%d,"refreshed":%s}`,
+		len(st.Endpoints), len(st.Selected), len(st.Working), quote(st.LastRefresh.Format(time.RFC3339)))
 }
 
 // OnSettingsSave runs after the operator changes this extension's settings:
@@ -418,6 +453,50 @@ var fetchSettings = []string{
 	"protocols",
 	"region_include",
 	"region_exclude",
+	"keep_working_ips",
+	"keep_working_max",
+	"keep_working_failures",
+}
+
+// keepMode reads the working-list setting.
+//
+// The remembered endpoints are the extension's own answer to a subscription
+// that rotates its IPs away: the endpoints that answered are saved, re-checked
+// on every refresh and dropped only when they stop answering.
+//
+//	off  (default) — only the endpoints the current subscriptions list.
+//	pool            — the remembered endpoints join the pool of candidates.
+//	pin             — the remembered endpoints also keep their place in the
+//	                  exit rotation.
+//
+// An unrecognised value behaves like "off" so a typo never silently keeps
+// endpoints around.
+func keepMode(p payload) string {
+	switch strings.ToLower(strings.TrimSpace(val(p, "keep_working_ips", keepOff))) {
+	case keepPool:
+		return keepPool
+	case keepPin:
+		return keepPin
+	case "on", "true", "yes", "1":
+		return keepPool
+	default:
+		return keepOff
+	}
+}
+
+// workingMax is how many endpoints the working list holds. 0 keeps them all.
+func workingMax(p payload) int {
+	return toInt(val(p, "keep_working_max", "50"), 50)
+}
+
+// workingFailures is how many refreshes in a row a remembered endpoint may
+// fail to answer before it leaves the working list.
+func workingFailures(p payload) int {
+	n := toInt(val(p, "keep_working_failures", "2"), 2)
+	if n < 1 {
+		n = 1
+	}
+	return n
 }
 
 // settingsFP fingerprints the fetch-relevant settings. The gateway never calls
@@ -471,19 +550,40 @@ func maybeStartRefresh(p payload, dir string) {
 
 // runRefresh fetches, parses, probes, filters and stores the endpoint set.
 func runRefresh(p payload, dir string) {
-	endpoints, errs, subs, fetched := collect(p)
+	fresh, errs, subs, fetched := collect(p)
 
 	// The raw list repeats entries across subscriptions and even inside one;
 	// keep a single row per distinct endpoint so the status, the IP list and
 	// the "selected" flag count endpoints rather than repetitions.
-	endpoints = dedupeEndpoints(endpoints)
+	fresh = dedupeEndpoints(fresh)
 
 	timeoutMS := toInt(val(p, "probe_timeout_ms", "1500"), 1500)
 	samples := toInt(val(p, "probe_count", "3"), 3)
 	if samples < 1 {
 		samples = 1
 	}
-	probeAll(endpoints, timeoutMS, samples)
+	probeAll(fresh, timeoutMS, samples)
+
+	mode := keepMode(p)
+
+	// The working list: what the previous refresh knew and what still
+	// answers. The endpoints the subscriptions no longer carry are probed on
+	// their own, so an IP that survived the update keeps working.
+	working := []Working(nil)
+	dropped := 0
+	if mode != keepOff {
+		mu.Lock()
+		remembered := append([]Working(nil), st.Working...)
+		previous := append([]Endpoint(nil), st.Endpoints...)
+		mu.Unlock()
+
+		working, dropped = refreshWorking(remembered, previous, fresh, timeoutMS, samples, workingFailures(p), workingMax(p))
+		if dropped > 0 {
+			errs = append(errs, fmt.Sprintf("dropped %d remembered endpoint(s) that stopped answering", dropped))
+		}
+	}
+
+	endpoints := mergeEndpoints(fresh, working)
 
 	filtered, filterErrs := filterEndpoints(p, endpoints)
 	errs = append(errs, filterErrs...)
@@ -494,7 +594,7 @@ func runRefresh(p payload, dir string) {
 	filtered = dedupeEndpoints(filtered)
 
 	keep := toInt(val(p, "node_count", "3"), 3)
-	picked := pickEndpoints(filtered, keep)
+	picked := selectEndpoints(filtered, working, keep, mode)
 
 	selected := make([]string, 0, len(picked))
 	selectedKeys := make([]string, 0, len(picked))
@@ -515,6 +615,7 @@ func runRefresh(p payload, dir string) {
 	st = State{
 		LastRefresh:   time.Now(),
 		Endpoints:     endpoints,
+		Working:       working,
 		Selected:      selected,
 		SelectedKeys:  selectedKeys,
 		Errors:        trimErrors(errs),
@@ -525,6 +626,160 @@ func runRefresh(p payload, dir string) {
 	}
 	saveStateLocked(dir)
 	mu.Unlock()
+}
+
+// refreshWorking keeps the extension's own list of working endpoints.
+//
+// The list holds what the subscriptions no longer carry: the endpoint
+// answered at some point, the provider rotated it away and it still works.
+// Every entry is probed on its own; one that stops answering is dropped after
+// maxFailures consecutive misses, so a single hiccup does not lose a good IP.
+//
+// It returns the new list and how many endpoints were dropped for good.
+func refreshWorking(remembered []Working, previous []Endpoint, fresh []Endpoint, timeoutMS, samples, maxFailures, max int) ([]Working, int) {
+	carried := make(map[string]bool, len(fresh))
+	for _, e := range fresh {
+		carried[endpointKey(e)] = true
+	}
+
+	// Start from what is already remembered and add the endpoints the
+	// subscriptions just dropped.
+	list := make([]Working, 0, len(remembered))
+	seen := make(map[string]bool, len(remembered)+len(previous))
+	for _, w := range remembered {
+		key := endpointKey(w.Endpoint)
+		if seen[key] || carried[key] {
+			// A subscription carries it again: it needs no memory.
+			continue
+		}
+		seen[key] = true
+		list = append(list, w)
+	}
+	now := time.Now()
+	for _, e := range previous {
+		if !e.Alive {
+			continue
+		}
+		key := endpointKey(e)
+		if seen[key] || carried[key] {
+			continue
+		}
+		seen[key] = true
+		list = append(list, Working{Endpoint: e, FirstSeen: now, LastSeen: now})
+	}
+
+	// Nothing in the list is carried by a subscription any more, so every
+	// entry is probed on its own.
+	if len(list) > 0 {
+		targets := make([]Endpoint, 0, len(list))
+		for _, w := range list {
+			targets = append(targets, w.Endpoint)
+		}
+		probeAll(targets, timeoutMS, samples)
+		for i := range list {
+			list[i].Latency = targets[i].Latency
+			list[i].Alive = targets[i].Alive
+		}
+	}
+
+	out := make([]Working, 0, len(list))
+	dropped := 0
+	for _, w := range list {
+		if w.Alive {
+			w.Misses = 0
+			w.LastSeen = now
+			out = append(out, w)
+			continue
+		}
+		w.Misses++
+		if w.Misses >= maxFailures {
+			dropped++
+			continue
+		}
+		out = append(out, w)
+	}
+
+	// The ones that still answer come first — they are the working ones —
+	// and the longest-standing entry leads, so a pinned rotation keeps its
+	// order across refreshes.
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].Alive != out[j].Alive {
+			return out[i].Alive
+		}
+		return out[i].FirstSeen.Before(out[j].FirstSeen)
+	})
+	if max > 0 && len(out) > max {
+		// The list is capped: the longest-standing entries stay, the newest
+		// ones are forgotten.
+		out = out[:max]
+	}
+	return out, dropped
+}
+
+// mergeEndpoints joins the fresh endpoints with the remembered ones. A fresh
+// endpoint wins: it carries the current name and latency.
+func mergeEndpoints(fresh []Endpoint, working []Working) []Endpoint {
+	out := make([]Endpoint, 0, len(fresh)+len(working))
+	seen := make(map[string]bool, len(fresh)+len(working))
+	for _, e := range fresh {
+		key := endpointKey(e)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		out = append(out, e)
+	}
+	for _, w := range working {
+		if !w.Alive {
+			continue
+		}
+		key := endpointKey(w.Endpoint)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		out = append(out, w.Endpoint)
+	}
+	return out
+}
+
+// selectEndpoints picks the exits the gateway may use.
+//
+// In pin mode the remembered endpoints come first: they keep the rotation
+// stable when a subscription update replaces the IPs, and the fresh ones only
+// fill the slots left over. In every other mode the usual rules (count,
+// order) decide.
+func selectEndpoints(filtered []Endpoint, working []Working, keep int, mode string) []Endpoint {
+	if mode != keepPin || len(working) == 0 {
+		return pickEndpoints(filtered, keep)
+	}
+	prio := make([]Endpoint, 0, len(filtered))
+	seen := make(map[string]bool, len(filtered))
+	for _, w := range working {
+		if !w.Alive {
+			continue
+		}
+		key := endpointKey(w.Endpoint)
+		if seen[key] {
+			continue
+		}
+		for _, e := range filtered {
+			if endpointKey(e) == key {
+				prio = append(prio, e)
+				seen[key] = true
+				break
+			}
+		}
+	}
+	for _, e := range filtered {
+		key := endpointKey(e)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		prio = append(prio, e)
+	}
+	return pickEndpoints(prio, keep)
 }
 
 // pickEndpoints keeps up to limit endpoints, labels first: a subscription may
@@ -1154,6 +1409,7 @@ func Data(raw string) string {
 		{"k": "Endpoints", "v": strconv.Itoa(len(snapshot.Endpoints))},
 		{"k": "Answering", "v": strconv.Itoa(alive)},
 		{"k": "Selected", "v": strconv.Itoa(len(snapshot.Selected))},
+		{"k": "Remembered", "v": strconv.Itoa(len(snapshot.Working))},
 		{"k": "Subscriptions", "v": strconv.Itoa(snapshot.Subscriptions)},
 	}
 
@@ -1164,6 +1420,7 @@ func Data(raw string) string {
 		{"k": "Rotation", "v": orDash(val(p, "egress_mode", "rotate"))},
 		{"k": "Order", "v": orDash(val(p, "node_order", "best_first"))},
 		{"k": "Keep", "v": orDash(val(p, "node_count", "3"))},
+		{"k": "Working list", "v": workingListLabel(p, snapshot)},
 	}
 	// With a tunnel core in play the port list is the contract with it, and
 	// it follows the kept count — say what it is instead of leaving the
@@ -1204,14 +1461,19 @@ func nodesPayload(snapshot State, kv []map[string]string) string {
 			},
 		})
 	}
+	remembered := rememberedKeys(snapshot.Working)
 	items := make([]string, 0, len(snapshot.Endpoints))
 	for _, e := range snapshot.Endpoints {
 		mark := "x"
 		if e.Alive {
 			mark = "ok"
 		}
+		note := ""
+		if remembered[endpointKey(e)] {
+			note = "  (saved)"
+		}
 		items = append(items, fmt.Sprintf(
-			"%s  %s  %s:%d  %dms  [%s]", mark, e.Protocol, e.Host, e.Port, e.Latency, e.Name))
+			"%s  %s  %s:%d  %dms  [%s]%s", mark, e.Protocol, e.Host, e.Port, e.Latency, e.Name, note))
 	}
 	blocks := []any{
 		map[string]any{"kind": "kv", "kv": kv},
@@ -1227,13 +1489,42 @@ func nodesPayload(snapshot State, kv []map[string]string) string {
 	return mustJSON(map[string]any{"blocks": blocks})
 }
 
+// rememberedKeys indexes the working list by endpoint identity, so the views
+// can tell the endpoints the extension remembers from the ones a subscription
+// still carries.
+func rememberedKeys(working []Working) map[string]bool {
+	out := make(map[string]bool, len(working))
+	for _, w := range working {
+		out[endpointKey(w.Endpoint)] = true
+	}
+	return out
+}
+
+// workingListLabel describes the extension's own list of working endpoints:
+// how many it remembers and how many of them still answer.
+func workingListLabel(p payload, snapshot State) string {
+	mode := keepMode(p)
+	if mode == keepOff {
+		return "off"
+	}
+	alive := 0
+	for _, w := range snapshot.Working {
+		if w.Alive {
+			alive++
+		}
+	}
+	return fmt.Sprintf("%s — %d remembered, %d answering", mode, len(snapshot.Working), alive)
+}
+
 // serversPayload is the machine-readable endpoint list behind the dashboard's
 // pool and provider views. Every endpoint is listed with the flags an operator
 // needs to tell the kept ones from the rest: `selected` marks the endpoints
-// that survived probing and trimming, `alive` whether the last probe answered.
-// apply_to, egress_mode and core_kind ride along so the caller can match the
-// list against the pool or provider it is rendering and say whether these
-// servers are actually in the rotation.
+// that survived probing and trimming, `alive` whether the last probe answered
+// and `remembered` whether the endpoint is in the extension's own working
+// list — the ones a subscription update no longer carries but that still
+// answer. apply_to, egress_mode and core_kind ride along so the caller can
+// match the list against the pool or provider it is rendering and say whether
+// these servers are actually in the rotation.
 func serversPayload(snapshot State, p payload) string {
 	// Prefer addresses: labels repeat across a subscription, so marking by
 	// name would light up every endpoint that shares one of the kept labels.
@@ -1247,6 +1538,7 @@ func serversPayload(snapshot State, p payload) string {
 		byName[name] = true
 	}
 	useKeys := len(snapshot.SelectedKeys) > 0
+	remembered := rememberedKeys(snapshot.Working)
 
 	servers := make([]map[string]any, 0, len(snapshot.Endpoints))
 	for _, e := range snapshot.Endpoints {
@@ -1262,13 +1554,15 @@ func serversPayload(snapshot State, p payload) string {
 			"alive":      e.Alive,
 			"latency_ms": e.Latency,
 			"selected":   selected,
+			"remembered": remembered[endpointKey(e)],
 		})
 	}
 	return mustJSON(map[string]any{
-		"apply_to":    val(p, "apply_to", "*"),
-		"egress_mode": val(p, "egress_mode", "rotate"),
-		"core_kind":   val(p, "core_kind", "none"),
-		"servers":     servers,
+		"apply_to":     val(p, "apply_to", "*"),
+		"egress_mode":  val(p, "egress_mode", "rotate"),
+		"core_kind":    val(p, "core_kind", "none"),
+		"keep_working": keepMode(p),
+		"servers":      servers,
 	})
 }
 

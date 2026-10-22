@@ -46,6 +46,10 @@
             "label": "IPs a manter",
             "description": "Quantas IPs sondadas manter. 0 mantém todas."
           },
+          "keep_working_ips": {
+            "label": "Manter os IPs que respondem",
+            "description": "off — apenas os IPs das assinaturas atuais. pool — os IPs que respondem são salvos na lista de trabalho da própria extensão e verificados de novo a cada atualização, então uma atualização da assinatura não os perde. pin — os IPs salvos também mantêm seu lugar na rotação de saídas, e os novos só preenchem as vagas livres."
+          },
           "egress_mode": {
             "label": "Modo de saída",
             "description": "rotate — com os endereços de origem do provedor. fallback — só após falha ou limite deles. vpn_only — estas primeiro, endereços de origem por último."
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "Intervalo de busca automática (minutos)",
             "description": "Com que frequência as assinaturas são relidas e as IPs reverificadas, em minutos. 0 desativa."
+          },
+          "keep_working_max": {
+            "label": "Tamanho da lista de trabalho",
+            "description": "Quantos IPs salvos a lista de trabalho guarda. 0 guarda todos."
+          },
+          "keep_working_failures": {
+            "label": "Falhas antes de remover",
+            "description": "Quantas atualizações seguidas um IP salvo pode não responder antes de sair da lista de trabalho."
           },
           "node_order": {
             "label": "Ordem de seleção",
@@ -137,6 +149,7 @@
                 "items": [
                   "O modo de saída decide onde essas IPs ficam: com os endereços de origem do provedor (rotate), atrás delas (fallback) ou na frente (vpn_only).",
                   "As assinaturas são relidas no intervalo de busca automática, então endpoints expirados são substituídos automaticamente.",
+                  "Manter os IPs que respondem salva na lista própria da extensão os IPs que respondiam: eles são verificados de novo a cada atualização, e um IP que a assinatura substitui continua funcionando enquanto responder.",
                   "As configurações ficam em Configurações → Extensões → Suporte a VPN."
                 ]
               }

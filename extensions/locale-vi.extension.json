@@ -46,6 +46,10 @@
             "label": "Số IP giữ lại",
             "description": "Giữ bao nhiêu IP đã kiểm chứng. 0 giữ tất cả."
           },
+          "keep_working_ips": {
+            "label": "Giữ các IP đang hoạt động",
+            "description": "off — chỉ dùng IP của các gói đăng ký hiện tại. pool — các IP có phản hồi được lưu vào danh sách làm việc của chính tiện ích và được kiểm tra lại sau mỗi lần làm mới, nên khi gói đăng ký cập nhật chúng vẫn không mất. pin — các IP đã lưu còn giữ chỗ của mình trong vòng quay đầu ra, IP mới chỉ lấp các chỗ trống."
+          },
           "egress_mode": {
             "label": "Chế độ xuất ra",
             "description": "rotate — cùng địa chỉ nguồn của nhà cung cấp. fallback — chỉ sau khi chúng hỏng hoặc chạm giới hạn. vpn_only — cái này trước, địa chỉ nguồn cuối."
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "Khoảng tự động kéo (phút)",
             "description": "Tần suất đọc lại đăng ký và kiểm tra lại IP, tính bằng phút. 0 để tắt."
+          },
+          "keep_working_max": {
+            "label": "Cỡ danh sách làm việc",
+            "description": "Danh sách làm việc giữ bao nhiêu IP đã lưu. 0 là giữ tất cả."
+          },
+          "keep_working_failures": {
+            "label": "Số lần trượt trước khi bỏ",
+            "description": "Một IP đã lưu được phép không phản hồi liên tiếp bao nhiêu lần làm mới trước khi rời danh sách làm việc."
           },
           "node_order": {
             "label": "Thứ tự chọn",
@@ -137,6 +149,7 @@
                 "items": [
                   "Chế độ xuất ra quyết định những IP này nằm ở đâu: cùng địa chỉ nguồn của nhà cung cấp (rotate), sau chúng (fallback), hoặc trước chúng (vpn_only).",
                   "Đăng ký được đọc lại theo khoảng tự động kéo nên điểm cuối hết hạn tự động được thay thế.",
+                  "Giữ các IP đang hoạt động lưu các IP đã phản hồi vào danh sách riêng của tiện ích: chúng được kiểm tra lại sau mỗi lần làm mới, và một IP bị gói đăng ký thay thế vẫn hoạt động chừng nào còn phản hồi.",
                   "Cài đặt ở Cài đặt → Tiện ích → Hỗ trợ VPN."
                 ]
               }

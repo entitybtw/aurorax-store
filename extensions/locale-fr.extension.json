@@ -46,6 +46,10 @@
             "label": "IP à garder",
             "description": "Combien d'IP sondées garder. 0 en garde toutes."
           },
+          "keep_working_ips": {
+            "label": "Conserver les IP qui répondent",
+            "description": "off — uniquement les IP des abonnements actuels. pool — les IP qui répondent sont enregistrées dans la liste de travail de l'extension et revérifiées à chaque actualisation : une mise à jour de l'abonnement ne les perd donc pas. pin — les IP enregistrées conservent aussi leur place dans la rotation des sorties, et les nouvelles ne remplissent que les places libres."
+          },
           "egress_mode": {
             "label": "Mode de sortie",
             "description": "rotate — avec les adresses sources du fournisseur. fallback — seulement après leur échec ou leur limite de débit. vpn_only — d'abord celles-ci, les adresses sources ensuite."
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "Intervalle de récupération auto (minutes)",
             "description": "Fréquence de relecture des abonnements et de nouveau sondage des IP, en minutes. 0 désactive."
+          },
+          "keep_working_max": {
+            "label": "Taille de la liste de travail",
+            "description": "Combien d'IP enregistrées la liste de travail conserve. 0 les conserve toutes."
+          },
+          "keep_working_failures": {
+            "label": "Échecs avant suppression",
+            "description": "Combien d'actualisations de suite une IP enregistrée peut ne pas répondre avant de quitter la liste de travail."
           },
           "node_order": {
             "label": "Ordre de sélection",
@@ -137,6 +149,7 @@
                 "items": [
                   "Le mode de sortie détermine la place de ces IP : avec les adresses sources du fournisseur (rotate), derrière (fallback) ou devant (vpn_only).",
                   "Les abonnements sont relus à l'intervalle de récupération auto, les points de terminaison expirés sont donc remplacés automatiquement.",
+                  "Conserver les IP qui répondent enregistre les IP qui répondaient dans la liste propre à l'extension : elles sont revérifiées à chaque actualisation, et une IP remplacée par l'abonnement continue de fonctionner tant qu'elle répond.",
                   "Les réglages se trouvent dans Réglages → Extensions → Support VPN."
                 ]
               }

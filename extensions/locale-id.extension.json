@@ -46,6 +46,10 @@
             "label": "Jumlah IP disimpan",
             "description": "Berapa IP teruji yang disimpan. 0 menyimpan semua."
           },
+          "keep_working_ips": {
+            "label": "Simpan IP yang berfungsi",
+            "description": "off — hanya IP dari langganan saat ini. pool — IP yang menjawab disimpan dalam daftar kerja ekstensi sendiri dan diperiksa ulang pada setiap penyegaran, jadi pembaruan langganan tidak menghilangkannya. pin — IP yang tersimpan juga mempertahankan tempatnya dalam rotasi keluar, dan IP baru hanya mengisi slot yang kosong."
+          },
           "egress_mode": {
             "label": "Mode keluaran",
             "description": "rotate — bersama alamat sumber milik penyedia. fallback — hanya setelah gagal atau kena batas. vpn_only — ini dulu, alamat sumber terakhir."
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "Interval ambil otomatis (menit)",
             "description": "Seberapa sering langganan dibaca ulang dan IP diuji ulang, dalam menit. 0 mematikan."
+          },
+          "keep_working_max": {
+            "label": "Ukuran daftar kerja",
+            "description": "Berapa banyak IP tersimpan yang ditahan daftar kerja. 0 menahan semuanya."
+          },
+          "keep_working_failures": {
+            "label": "Kegagalan sebelum dihapus",
+            "description": "Berapa kali berturut-turut IP tersimpan boleh tidak menjawab sebelum keluar dari daftar kerja."
           },
           "node_order": {
             "label": "Urutan pemilihan",
@@ -137,6 +149,7 @@
                 "items": [
                   "Mode keluaran menentukan tempat IP ini: bersama alamat sumber milik penyedia (rotate), di belakangnya (fallback), atau di depannya (vpn_only).",
                   "Langganan dibaca ulang pada interval ambil otomatis, sehingga titik ujung kedaluwarsa diganti otomatis.",
+                  "Simpan IP yang berfungsi menyimpan IP yang menjawab ke dalam daftar milik ekstensi sendiri: IP itu diperiksa ulang pada setiap penyegaran, dan IP yang diganti oleh langganan tetap berfungsi selama masih menjawab.",
                   "Pengaturan ada di Pengaturan → Ekstensi → Dukungan VPN."
                 ]
               }

@@ -46,6 +46,10 @@
             "label": "Te behouden IP's",
             "description": "Hoeveel geteste IP's er worden behouden. 0 behoudt ze allemaal."
           },
+          "keep_working_ips": {
+            "label": "Werkende IP's behouden",
+            "description": "off — alleen de IP's van de huidige abonnementen. pool — de IP's die antwoorden worden bewaard in de eigen werklijst van de extensie en bij elke update opnieuw gecontroleerd, zodat een abonnementsupdate ze niet kwijtraakt. pin — de bewaarde IP's behouden ook hun plaats in de exitrotatie, en de nieuwe vullen alleen de vrije plekken."
+          },
           "egress_mode": {
             "label": "Uitgangsmodus",
             "description": "rotate — met de eigen bronadressen van de provider. fallback — pas na falen of rate-limit. vpn_only — deze eerst, bronadressen laatst."
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "Auto-ophaalinterval (minuten)",
             "description": "Hoe vaak abonnementen opnieuw worden gelezen en IP's opnieuw getest, in minuten. 0 schakelt het uit."
+          },
+          "keep_working_max": {
+            "label": "Grootte van de werklijst",
+            "description": "Hoeveel bewaarde IP's de werklijst bewaart. 0 bewaart ze allemaal."
+          },
+          "keep_working_failures": {
+            "label": "Gemiste controles voor verwijdering",
+            "description": "Hoeveel updates op rij een bewaard IP niet mag antwoorden voordat het de werklijst verlaat."
           },
           "node_order": {
             "label": "Selectievolgorde",
@@ -137,6 +149,7 @@
                 "items": [
                   "De uitgangsmodus bepaalt waar deze IP's staan: met de eigen bronadressen van de provider (rotate), erachter (fallback) of ervoor (vpn_only).",
                   "Abonnementen worden op het auto-ophaalinterval opnieuw gelezen, dus verlopen eindpunten worden automatisch vervangen.",
+                  "Werkende IP's behouden bewaart de IP's die antwoordden in de eigen lijst van de extensie: ze worden bij elke update opnieuw gecontroleerd, en een IP dat het abonnement vervangt blijft werken zolang het antwoordt.",
                   "De instellingen staan onder Instellingen → Extensies → VPN-ondersteuning."
                 ]
               }

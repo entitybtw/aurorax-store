@@ -46,6 +46,10 @@
             "label": "Adresów IP do zachowania",
             "description": "Ile sprawdzonych adresów IP zachować. 0 zachowuje wszystkie."
           },
+          "keep_working_ips": {
+            "label": "Zachowaj działające IP",
+            "description": "off — tylko IP z bieżących subskrypcji. pool — IP, które odpowiadają, są zapisywane we własnej liście roboczej rozszerzenia i sprawdzane ponownie przy każdym odświeżeniu, więc aktualizacja subskrypcji ich nie gubi. pin — zapisane IP zachowują też swoje miejsce w rotacji wyjść, a nowe wypełniają tylko wolne miejsca."
+          },
           "egress_mode": {
             "label": "Tryb wyjścia",
             "description": "rotate — razem z własnymi adresami źródłowymi dostawcy. fallback — dopiero po ich awarii lub limicie. vpn_only — najpierw te, na końcu adresy źródłowe."
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "Odstęp automatycznego pobierania (minuty)",
             "description": "Jak często subskrypcje są ponownie odczytywane, a adresy IP sprawdzane, w minutach. 0 wyłącza."
+          },
+          "keep_working_max": {
+            "label": "Rozmiar listy roboczej",
+            "description": "Ile zapisanych IP mieści lista robocza. 0 oznacza wszystkie."
+          },
+          "keep_working_failures": {
+            "label": "Niepowodzenia przed usunięciem",
+            "description": "Ile kolejnych odświeżeń zapisane IP może nie odpowiadać, zanim opuści listę roboczą."
           },
           "node_order": {
             "label": "Kolejność wyboru",
@@ -137,6 +149,7 @@
                 "items": [
                   "Tryb wyjścia decyduje, gdzie znajdują się te adresy IP: razem z własnymi adresami źródłowymi dostawcy (rotate), za nimi (fallback) lub przed nimi (vpn_only).",
                   "Subskrypcje są ponownie odczytywane co odstęp automatycznego pobierania, więc wygasłe punkty końcowe są wymieniane automatycznie.",
+                  "Zachowaj działające IP zapisuje we własnej liście rozszerzenia IP, które odpowiadały: są sprawdzane ponownie przy każdym odświeżeniu, a IP wypisane przez subskrypcję działa, dopóki odpowiada.",
                   "Ustawienia znajdują się w Ustawienia → Rozszerzenia → Wsparcie VPN."
                 ]
               }

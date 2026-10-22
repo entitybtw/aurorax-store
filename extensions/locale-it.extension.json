@@ -46,6 +46,10 @@
             "label": "IP da mantenere",
             "description": "Quante IP sondate mantenere. 0 ne mantiene tutte."
           },
+          "keep_working_ips": {
+            "label": "Mantieni gli IP che rispondono",
+            "description": "off — solo gli IP degli abbonamenti attuali. pool — gli IP che rispondono vengono salvati nell'elenco di lavoro dell'estensione e ricontrollati a ogni aggiornamento, così un aggiornamento dell'abbonamento non li perde. pin — gli IP salvati mantengono anche il loro posto nella rotazione delle uscite, e i nuovi riempiono solo i posti liberi."
+          },
           "egress_mode": {
             "label": "Modalità di uscita",
             "description": "rotate — con gli indirizzi di origine del provider. fallback — solo dopo il loro fallimento o limite. vpn_only — prima questi, poi gli indirizzi di origine."
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "Intervallo di recupero automatico (minuti)",
             "description": "Quanto spesso gli abbonamenti vengono riletti e le IP risondate, in minuti. 0 lo disabilita."
+          },
+          "keep_working_max": {
+            "label": "Dimensione dell'elenco di lavoro",
+            "description": "Quanti IP salvati l'elenco di lavoro conserva. 0 li conserva tutti."
+          },
+          "keep_working_failures": {
+            "label": "Errori prima della rimozione",
+            "description": "Quanti aggiornamenti di fila un IP salvato può non rispondere prima di uscire dall'elenco di lavoro."
           },
           "node_order": {
             "label": "Ordine di selezione",
@@ -137,6 +149,7 @@
                 "items": [
                   "La modalità di uscita decide dove stanno queste IP: con gli indirizzi di origine del provider (rotate), dietro (fallback) o davanti (vpn_only).",
                   "Gli abbonamenti vengono riletti all'intervallo di recupero automatico, così gli endpoint scaduti vengono sostituiti automaticamente.",
+                  "Mantieni gli IP che rispondono salva nell'elenco proprio dell'estensione gli IP che rispondevano: vengono ricontrollati a ogni aggiornamento e un IP sostituito dall'abbonamento continua a funzionare finché risponde.",
                   "Le impostazioni si trovano in Impostazioni → Estensioni → Supporto VPN."
                 ]
               }

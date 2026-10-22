@@ -46,6 +46,10 @@
             "label": "Zu behaltende IPs",
             "description": "Wie viele geprüfte IPs behalten werden. 0 behält alle."
           },
+          "keep_working_ips": {
+            "label": "Funktionierende IPs behalten",
+            "description": "off — nur die IPs der aktuellen Abos. pool — die antwortenden IPs werden in der eigenen Arbeitsliste der Erweiterung gespeichert und bei jeder Aktualisierung erneut geprüft, sodass ein aktualisiertes Abo sie nicht verliert. pin — die gespeicherten IPs behalten außerdem ihren Platz in der Exit-Rotation, und die neuen IPs füllen nur die freien Plätze."
+          },
           "egress_mode": {
             "label": "Ausgangsmodus",
             "description": "rotate — zusammen mit den eigenen Quelladressen des Providers. fallback — erst nach deren Fehler oder Rate-Limit. vpn_only — diese zuerst, Quelladressen zuletzt."
@@ -57,6 +61,14 @@
           "refresh_interval_minutes": {
             "label": "Auto-Abruf-Intervall (Minuten)",
             "description": "Wie oft Abonnements neu gelesen und IPs erneut geprüft werden, in Minuten. 0 deaktiviert es."
+          },
+          "keep_working_max": {
+            "label": "Größe der Arbeitsliste",
+            "description": "Wie viele gespeicherte IPs die Arbeitsliste hält. 0 behält alle."
+          },
+          "keep_working_failures": {
+            "label": "Fehlversuche bis zum Löschen",
+            "description": "Wie viele Aktualisierungen in Folge eine gespeicherte IP nicht antworten darf, bevor sie die Arbeitsliste verlässt."
           },
           "node_order": {
             "label": "Auswahlreihenfolge",
@@ -137,6 +149,7 @@
                 "items": [
                   "Der Ausgangsmodus bestimmt, wo diese IPs stehen: mit den eigenen Quelladressen des Providers (rotate), dahinter (fallback) oder davor (vpn_only).",
                   "Abonnements werden im Auto-Abruf-Intervall neu gelesen, sodass abgelaufene Endpunkte automatisch ersetzt werden.",
+                  "Funktionierende IPs behalten speichert die antwortenden IPs in der eigenen Liste der Erweiterung: sie werden bei jeder Aktualisierung erneut geprüft, und eine IP, die das Abo ersetzt hat, funktioniert weiter, bis sie nicht mehr antwortet.",
                   "Die Einstellungen stehen unter Einstellungen → Erweiterungen → VPN-Unterstützung."
                 ]
               }

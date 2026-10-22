@@ -3,8 +3,8 @@
   "id": "vpn-support",
   "name": "VPN Support",
   "tagline": "Subscription VPN endpoints for the providers you choose",
-  "description": "Add VPN endpoints to the exit set of the providers or pools you list. Paste a subscription (or a node URI), pick how many IPs to keep and how they are used, and the gateway takes care of the rest: it fetches the subscription, parses every endpoint, probes it, keeps the best ones and drops the ones that stopped answering, then repeats on the configured refresh interval so expired subscriptions are replaced automatically. Each endpoint list can be bound to several providers or pools at once. This extension ships only its own runtime and UI addons — no gateway code is required for it to work.",
-  "version": "7",
+  "description": "Add VPN endpoints to the exit set of the providers or pools you list. Paste a subscription (or a node URI), pick how many IPs to keep and how they are used, and the gateway takes care of the rest: it fetches the subscription, parses every endpoint, probes it, keeps the best ones and drops the ones that stopped answering, then repeats on the configured refresh interval so expired subscriptions are replaced automatically. Turn on Keep working IPs and the extension also keeps its own list of the IPs that answered: they are re-checked on every refresh, so a subscription update that replaces them does not lose the exit — an IP leaves that list only when it stops answering. Each endpoint list can be bound to several providers or pools at once. This extension ships only its own runtime and UI addons — no gateway code is required for it to work.",
+  "version": "8",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
@@ -19,6 +19,9 @@
     "egress_mode": "rotate",
     "refresh_interval_minutes": "30",
     "node_count": "3",
+    "keep_working_ips": "off",
+    "keep_working_max": "50",
+    "keep_working_failures": "2",
     "node_order": "best_first",
     "quality_max_ms": "400",
     "probe_count": "3",
@@ -32,7 +35,7 @@
   "ui": {
     "accent": "#7dcfff",
     "docs_url": "",
-    "help": "Paste a subscription, choose how many IPs to keep, pick where they sit in the exit rotation and list the providers or pools they apply to (comma-separated). Everything else has a working default.",
+    "help": "Paste a subscription, choose how many IPs to keep, pick where they sit in the exit rotation and list the providers or pools they apply to (comma-separated). Turn on Keep working IPs to keep the IPs that answered in the extension's own list — they survive a subscription update and leave it only when they stop answering. Everything else has a working default.",
     "fields": [
       {
         "key": "subscriptions",
@@ -45,6 +48,17 @@
         "label": "IPs to keep",
         "type": "number",
         "description": "How many of the probed IPs to keep. 0 keeps all."
+      },
+      {
+        "key": "keep_working_ips",
+        "label": "Keep working IPs",
+        "type": "select",
+        "options": [
+          "off",
+          "pool",
+          "pin"
+        ],
+        "description": "off — only the IPs the current subscriptions list. pool — the IPs that answered are saved in the extension's own working list and re-checked on every refresh, so a subscription update that replaces them does not lose the exit. pin — the saved IPs also keep their place in the exit rotation, and the new ones only fill the free slots."
       },
       {
         "key": "egress_mode",
@@ -69,6 +83,20 @@
         "type": "number",
         "description": "How often subscriptions are re-read and IPs re-probed, in minutes. 0 disables it.",
         "advanced": true
+      },
+      {
+        "key": "keep_working_max",
+        "advanced": true,
+        "label": "Working list size",
+        "type": "number",
+        "description": "How many saved IPs the working list holds. 0 keeps all of them."
+      },
+      {
+        "key": "keep_working_failures",
+        "advanced": true,
+        "label": "Misses before a drop",
+        "type": "number",
+        "description": "How many refreshes in a row a saved IP may not answer before it leaves the working list."
       },
       {
         "key": "node_order",
@@ -220,6 +248,7 @@
             "items": [
               "Exit mode decides where these IPs sit: with the provider's own source addresses (rotate), behind them (fallback) or in front of them (vpn_only).",
               "Subscriptions are re-read on the auto-fetch interval, so expired endpoints are replaced automatically.",
+              "Keep working IPs saves the IPs that answered in the extension's own list: they are re-checked on every refresh and an IP a subscription update drops keeps working until it stops answering.",
               "Settings live in Settings → Extensions → VPN support."
             ]
           }
@@ -245,6 +274,7 @@
   "notes": [
     "This extension only contributes exits; it does not change how the gateway talks to providers.",
     "Subscription URLs, headers and the core API secret are stored in the gateway's extension config.",
+    "The working list of the remembered IPs is kept in the extension's own state file next to the addon.",
     "Review third-party extensions before installing them from a store."
   ],
   "files": {
