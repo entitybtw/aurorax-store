@@ -3,7 +3,7 @@
   "id": "opencode",
   "name": "OpenCode Emulation",
   "tagline": "OpenCode emulation profile — provider type, headers, tools",
-  "description": "Adds the optional CLI provider type, injects its tool types, and emulates the upstream CLI client (headers and full tool schema). Works for both free-tier and paid/API-key traffic. The free tier requires the session headers to carry a real OpenCode id: ses_ + 12 hex characters encoding the current time + 14 base62 characters (charset: timestamped), plus the project and trace headers the real client sends. The free tier quota is metered per source IP, so the addresses of the exit pool are what limits throughput. Device-flow authorization lives in the separate opencode-oauth extension.",
+  "description": "Adds the optional CLI provider type, injects its tool types, and emulates the upstream CLI client (headers and full tool schema). Works for both free-tier and paid/API-key traffic. The free tier requires the session headers to carry a real OpenCode id: ses_ + 12 hex characters encoding the current time + 14 base62 characters (charset: timestamped), one and the same value in all four session headers, plus the project and trace headers the real client sends. The free tier quota is metered per source IP, so the addresses of the exit pool are what limits throughput. Device-flow authorization lives in the separate opencode-oauth extension.",
   "version": "6",
   "author": "aurora",
   "homepage": "",
@@ -30,28 +30,32 @@
       "mode": "map_or_generate",
       "prefix": "ses_",
       "length": 26,
-      "charset": "timestamped"
+      "charset": "timestamped",
+      "template": "session"
     },
     {
       "name": "x-opencode-session-id",
       "mode": "map_or_generate",
       "prefix": "ses_",
       "length": 26,
-      "charset": "timestamped"
+      "charset": "timestamped",
+      "template": "session"
     },
     {
       "name": "x-session-affinity",
       "mode": "map_or_generate",
       "prefix": "ses_",
       "length": 26,
-      "charset": "timestamped"
+      "charset": "timestamped",
+      "template": "session"
     },
     {
       "name": "x-session-id",
       "mode": "map_or_generate",
       "prefix": "ses_",
       "length": 26,
-      "charset": "timestamped"
+      "charset": "timestamped",
+      "template": "session"
     },
     {
       "name": "x-opencode-client",
@@ -94,6 +98,7 @@
   "notes": [
     "Tool injection is scoped to providers of type cli-emulation.",
     "Session ids use charset 'timestamped' because the upstream decodes the first 12 hex characters back to a timestamp and only accepts ids that resolve to a recent time.",
+    "All four session headers carry the same id: the real client has one session id and repeats it in every header it sends it in. The template 'session' builds it once per request and hands the same value to every rule that names it.",
     "x-opencode-project carries a 40 hex character project id, the shape the real client sends; the upstream only checks the shape.",
     "b3 and traceparent are the distributed-tracing headers of the real client. They carry the same trace and span ids in the two formats.",
     "The header rules must keep their charset: it is dropped when the rules are read back from configs/session-hub-rules.yaml without it, and a session id that lost its 'timestamped' charset is rejected with FreeTierError.",
