@@ -4,7 +4,7 @@
   "name": "OpenCode Emulation",
   "tagline": "OpenCode emulation profile — provider type, headers, tools",
   "description": "Adds the optional CLI provider type, injects its tool types, and emulates the upstream CLI client (headers and full tool schema). Works for both free-tier and paid/API-key traffic. The free tier requires the session headers to carry a real OpenCode id: ses_ + 12 hex characters encoding the current time + 14 base62 characters (charset: timestamped), one and the same value in all four session headers, plus the project and trace headers the real client sends. The free tier quota is metered per source IP, so the addresses of the exit pool are what limits throughput. Device-flow authorization lives in the separate opencode-oauth extension.",
-  "version": "6",
+  "version": "7",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
