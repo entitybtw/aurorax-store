@@ -117,7 +117,7 @@ async function openDetail(id) {
     const full = await fetchJSON(rawUrl).catch(() => meta);
     const headers = (full.headers || [])
       .map((h) => {
-        const detail = [h.mode, h.prefix, h.length ? `+${h.length}` : null, h.charset, h.value]
+        const detail = [h.mode, h.prefix, h.length ? `+${h.length}` : null, h.charset, h.template, h.value]
           .filter(Boolean)
           .join(" · ");
         return `<div class="header-row"><code>${escapeHtml(h.name)}</code><span>${escapeHtml(detail)}</span></div>`;

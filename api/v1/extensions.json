@@ -13,7 +13,7 @@
       "name": "OpenCode Emulation",
       "tagline": "OpenCode emulation profile — provider type, headers, tools",
       "type": "sidecar",
-      "version": "5",
+      "version": "6",
       "author": "aurora"
     },
     {
