@@ -34,6 +34,35 @@ keeps your saved settings, applied state and position.
 
 ---
 
+## Run the gateway
+
+The gateway is published as a Docker image. The extensions in this store are
+installed into a running gateway — they are not a runtime of their own.
+
+```yaml
+services:
+  aurora:
+    image: entbtw/aurora:v1.7.12
+    restart: unless-stopped
+    working_dir: /app
+    ports:
+      - "7841:8080"
+    environment:
+      AURORA_CONFIG_PATH: /app/configs/config.yaml
+      AURORA_MASTER_KEY: ${AURORA_MASTER_KEY}
+      STORAGE_TYPE: sqlite
+      AURORA_SIDECAR_ENABLED: "true"
+```
+
+```bash
+docker compose up -d
+```
+
+`AURORA_MASTER_KEY` is the admin key of the dashboard and of the API. Without
+it the admin endpoints are closed.
+
+---
+
 ## Safety — read before installing
 
 > **Disclaimer:** Everything here is shared for **informational and
