@@ -4,7 +4,7 @@
   "name": "OpenCode Emulation",
   "tagline": "OpenCode emulation profile — provider type, headers, tools",
   "description": "Adds the optional CLI provider type, injects its tool types, and emulates the upstream CLI client (headers and full tool schema). Works for both free-tier and paid/API-key traffic. The free tier requires the session headers to carry a real OpenCode id: ses_ + 12 hex characters encoding the current time + 14 base62 characters (charset: timestamped), one and the same value in all four session headers, plus the project and trace headers the real client sends. The free tier is metered on a daily window that resets at 00:00 UTC; the exit pool is what keeps a request on a healthy address, but a fresh address does not by itself grant fresh free quota (observed: addresses never used that day were refused with the same window).",
-  "version": "9",
+  "version": "10",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
@@ -26,7 +26,7 @@
   "headers": [
     {
       "name": "x-opencode-session",
-      "mode": "map_or_generate",
+      "mode": "generate",
       "prefix": "ses_",
       "length": 26,
       "charset": "timestamped",
@@ -34,7 +34,7 @@
     },
     {
       "name": "x-opencode-session-id",
-      "mode": "map_or_generate",
+      "mode": "generate",
       "prefix": "ses_",
       "length": 26,
       "charset": "timestamped",
@@ -42,7 +42,7 @@
     },
     {
       "name": "x-session-affinity",
-      "mode": "map_or_generate",
+      "mode": "generate",
       "prefix": "ses_",
       "length": 26,
       "charset": "timestamped",
@@ -50,7 +50,7 @@
     },
     {
       "name": "x-session-id",
-      "mode": "map_or_generate",
+      "mode": "generate",
       "prefix": "ses_",
       "length": 26,
       "charset": "timestamped",
@@ -86,15 +86,18 @@
   "settings": {
     "forward_headers": "[\"x-opencode-session\", \"x-opencode-session-id\", \"x-session-affinity\", \"x-session-id\", \"x-opencode-client\", \"x-opencode-project\", \"b3\", \"traceparent\"]",
     "sidecar_url": "http://127.0.0.1:8090/v1",
-    "retry_statuses": "[403]"
+    "retry_statuses": "[403]",
+    "tls_front_url": "",
+    "tls_front_presets": "chrome120,firefox120,safari,edge"
   },
   "requirements": [
     "session headers must be ses_ followed by exactly 26 characters: 12 hex encoding the current time (charset 'timestamped' generates these) then 14 base62 characters",
     "a plain random hex id is rejected upstream with FreeTierError even though the shape matches",
     "the free tier is metered on a daily window that resets at 00:00 UTC; the window is not private to one address, so a fresh source address does not by itself give fresh quota - rotating exits keeps traffic on a healthy address and past per-address throttles, it does not multiply the free allowance",
-    "the upstream only accepts requests that carry the full client signature (the real tool schema plus a Bun TLS fingerprint); a 403 FreeTierError means the signature is missing, a 429 FreeUsageLimitError means the signature was accepted and the address ran out of quota",
+    "the upstream only accepts requests that carry the full client signature (the real tool schema plus a plausible TLS fingerprint: Bun's own, or any preset served by the gateway's TLS front); a 403 FreeTierError means the signature is missing, a 429 FreeUsageLimitError means the signature was accepted and the address ran out of quota",
     "the gateway must run with host networking (or with every bind_ip assigned to a local interface): an exit address the host does not own is logged as an error and skipped instead of being silently published as a dead proxy",
-    "session ids, the tool schema and the Bun TLS fingerprint must all come from the same emulated client: a 403 FreeTierError means the signature is incomplete"
+    "session ids, the tool schema and the Bun TLS fingerprint must all come from the same emulated client: a 403 FreeTierError means the signature is incomplete",
+    "each request generates its own session id (mode 'generate'); re-applying this extension aligns an older install that still mapped them, because a mapped id is reused across requests and the whole point of the emulated client is one fresh session per call"
   ],
   "notes": [
     "Tool injection is scoped to providers of type cli-emulation.",
@@ -107,7 +110,10 @@
     "max_attempts is left unset on purpose: the sidecar must be free to answer a retried request, and the gateway rotates exits per attempt. Pinning it to 1 disabled every retry, so a single upstream hiccup reached the client.",
     "A 429 (FreeUsageLimitError) is not retried by the sidecar: the gateway holds the exit registry and moves the request to another exit itself, then passes the upstream's Retry-After back to the client unchanged.",
     "The 429 window is measured in UTC: the free quota resets at 00:00 UTC, and a new session or project id does not lift it. The upgrade hint in the message is the upstream's own.",
-    "Retry-After is returned to the client as the number of seconds until the window rolls over, so a client can wait instead of retrying blindly."
+    "Retry-After is returned to the client as the number of seconds until the window rolls over, so a client can wait instead of retrying blindly.",
+    "TLS front: a Bun process can only present one ClientHello, so the gateway ships an optional loopback front (AURORA_TLS_FRONT_LISTEN + AURORA_TLS_FRONT_PRESETS). Point tls_front_url at it and the sidecar posts plain HTTP there; the front applies the exit the gateway picked and re-opens the connection upstream with uTLS, rotating the fingerprint per request. Each answer carries X-Aurora-Tls-Preset so rotation is verifiable.",
+    "The TLS fingerprint is not what the free tier meters: a Chrome 120 fingerprint was accepted and answered with the same FreeUsageLimitError as Bun. Rotating fingerprints changes who the connection looks like, not how much quota it has.",
+    "Session mode 'generate' also means no mapping file grows on disk and mapping_storage can stay 'memory'."
   ],
   "ui": {
     "accent": "#E87040",

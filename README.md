@@ -319,6 +319,17 @@ Install `opencode` for the provider type and client signature; add
 `opencode-oauth` to wire device-flow auth. Pools whose members report type
 `vllm` still receive tool injection and streaming via `inject_tool_types`.
 
+Each request gets its own session id (`mode: generate`): the four session
+headers of the emulated client share one freshly built value, and no mapping
+file is written. Re-applying the extension on an older install updates session
+headers still mapped, so "a new session per request" holds after an upgrade too.
+
+`tls_front_url` / `tls_front_presets` point the sidecar at the gateway's TLS
+front (see `documentation/TLS_FRONT.md` in AuroraX). Bun can present only one
+TLS ClientHello; with the front enabled the gateway re-opens the upstream
+connection with uTLS and rotates the fingerprint per request. Leave
+`tls_front_url` empty to keep Bun's own fingerprint.
+
 ### Authorization-code auth
 
 | id | role |
