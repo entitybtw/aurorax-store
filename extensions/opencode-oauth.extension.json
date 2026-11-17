@@ -3,8 +3,8 @@
   "id": "opencode-oauth",
   "name": "OpenCode OAuth",
   "tagline": "OAuth device-flow for the optional provider type",
-  "description": "OAuth device-flow wiring (server, client_id, verification base) for the optional provider type. Provides the oauth feature only. Install the opencode CLI extension alongside it for the provider type, headers, tools and client signature.",
-  "version": "4",
+  "description": "OAuth device-flow wiring (server, client_id, verification base) for the optional provider type. Provides the oauth feature only. Install the opencode CLI extension alongside it for the provider type, headers, tools and client signature. Requests org-scoped device codes and keeps the organization id.",
+  "version": "5",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
@@ -22,13 +22,15 @@
   },
   "requirements": [],
   "notes": [
+    "Device code is requested with supports_org_scope, matching the reference client, so the login lands in the account's organization.",
+    "Token responses carrying org_id are stored; metadata falls back to the first organization by id only when the token names none.",
     "Pairs with the opencode CLI extension for the provider type and client signature.",
     "Review third-party extensions before installing them from a store."
   ],
   "ui": {
     "accent": "#E87040",
     "docs_url": "",
-    "help": "Wires device-flow OAuth for the optional provider type. No headers or tools — combine with the opencode CLI extension."
+    "help": "Wires device-flow OAuth for the optional provider type (org-scoped, as the reference client does). No headers or tools — combine with the opencode CLI extension."
   },
   "files": {
     "auth-opencode.go": {

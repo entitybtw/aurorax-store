@@ -560,6 +560,9 @@ type tokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 	ExpiresIn    int    `json:"expires_in"`
+	// OrgID is present when the device code was requested with
+	// supports_org_scope; it selects which organization the login belongs to.
+	OrgID string `json:"org_id"`
 }
 
 type tokenError struct {
@@ -574,6 +577,7 @@ type storedToken struct {
 	ClientID     string    `json:"client_id"`
 	AccountID    string    `json:"account_id,omitempty"`
 	Email        string    `json:"email,omitempty"`
+	OrgID        string    `json:"org_id,omitempty"`
 }
 
 // manager owns the token state for one provider.
@@ -674,7 +678,14 @@ func (m *manager) startDeviceFlow() (*deviceCodeResponse, error) {
 	if m.cfg.Server == "" {
 		return nil, fmt.Errorf("device flow requires an auth server (extension auth block)")
 	}
-	body, _ := json.Marshal(map[string]string{"client_id": m.cfg.ClientID})
+	// supports_org_scope is what the reference client sends; without it the
+	// token comes back with no org_id and the account resolves to whatever
+	// organization the console picks (or none), which changes the quota the
+	// login lands on.
+	body, _ := json.Marshal(map[string]any{
+		"client_id":          m.cfg.ClientID,
+		"supports_org_scope": true,
+	})
 	req, err := http.NewRequest("POST", m.cfg.Server+"/auth/device/code", bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("create device code request: %w", err)
@@ -813,6 +824,9 @@ func (m *manager) refresh() error {
 	if tok.RefreshToken != "" {
 		m.token.RefreshToken = tok.RefreshToken
 	}
+	if tok.OrgID != "" {
+		m.token.OrgID = tok.OrgID
+	}
 	m.token.ExpiresAt = time.Now().Add(time.Duration(tok.ExpiresIn) * time.Second)
 	return m.saveToken()
 }
@@ -840,11 +854,15 @@ func (m *manager) saveFromResponse(tok *tokenResponse) error {
 		ExpiresAt:    time.Now().Add(time.Duration(tok.ExpiresIn) * time.Second),
 		Server:       m.cfg.Server,
 		ClientID:     m.cfg.ClientID,
+		OrgID:        tok.OrgID,
 	}
 	if m.cfg.Server != "" {
 		if info := m.fetchAccountInfo(tok.AccessToken); info != nil {
 			m.token.AccountID = info.AccountID
 			m.token.Email = info.Email
+			if m.token.OrgID == "" {
+				m.token.OrgID = info.OrgID
+			}
 		}
 	}
 	return m.saveToken()
@@ -869,6 +887,12 @@ func (m *manager) fetchAccountInfo(accessToken string) *storedToken {
 	}
 	type orgResponse struct {
 		ID string `json:"id"`
+	}
+	// The organization the console selected for this login, if the token
+	// names one; it wins over the sorted fallback below.
+	pickedOrg := ""
+	if m.token != nil {
+		pickedOrg = m.token.OrgID
 	}
 	fetch := func(u string, out any) bool {
 		req, err := http.NewRequest("GET", u, nil)
@@ -898,8 +922,16 @@ func (m *manager) fetchAccountInfo(accessToken string) *storedToken {
 	if user.Email != "" {
 		info.Email = user.Email
 	}
-	if len(orgs) > 0 && info.AccountID == "" {
-		info.AccountID = orgs[0].ID
+	// The reference client prefers the org named in the token, then the
+	// first org sorted by id — never the account id.
+	if len(orgs) > 0 {
+		info.OrgID = orgs[0].ID
+		for _, o := range orgs {
+			if pickedOrg != "" && o.ID == pickedOrg {
+				info.OrgID = pickedOrg
+				break
+			}
+		}
 	}
 	if info.AccountID == "" && info.Email == "" {
 		return nil
