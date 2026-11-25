@@ -48,23 +48,27 @@ import (
 )
 
 const (
-	extensionID       = "leak-pools"
-	stateFileName     = "leak-pools-state.json"
-	runtimeSockName   = "leak-pools-runtime.sock"
-	runtimeOwnerName  = "leak-pools-runtime.owner"
-	kindAppInstall    = "app installation token"
-	defaultGitHubAPI  = "https://api.github.com"
-	defaultPollSecs   = 30
-	defaultPerPage    = 100
-	maxFindings       = 400
-	maxSeenEvents     = 3000
-	maxGitHubTokens   = 64
-	maxModels         = 300
-	maxPending        = 100
-	maxListItems      = 60
-	maxBodySnippet    = 320
-	maxScanLine       = 1 << 20
-	defaultTimeoutSec = 10
+	extensionID        = "leak-pools"
+	stateFileName      = "leak-pools-state.json"
+	runtimeSockName    = "leak-pools-runtime.sock"
+	runtimeOwnerName   = "leak-pools-runtime.owner"
+	kindAppInstall     = "app installation token"
+	tokenSourceEnv     = "env"
+	tokenSourceLegacy  = "legacy"
+	tokenSourceHarvest = "harvest"
+	tokenSourceSetting = "settings"
+	defaultGitHubAPI   = "https://api.github.com"
+	defaultPollSecs    = 30
+	defaultPerPage     = 100
+	maxFindings        = 400
+	maxSeenEvents      = 3000
+	maxGitHubTokens    = 64
+	maxModels          = 300
+	maxPending         = 100
+	maxListItems       = 60
+	maxBodySnippet     = 320
+	maxScanLine        = 1 << 20
+	defaultTimeoutSec  = 10
 )
 
 // ---------------------------------------------------------------------------
@@ -91,6 +95,7 @@ type config struct {
 	GitHubToken         string
 	GitHubTokens        string
 	HarvestGitHubTokens bool
+	ForgetSavedTokens   bool
 	AdminURL            string
 	AdminKey            string
 	PollInterval        time.Duration
@@ -107,6 +112,10 @@ type config struct {
 	GitHubAPI           string
 	AllowAnonymous      bool
 	RequestTimeout      time.Duration
+	// StoreLoaded is true only when the extension settings were read from the
+	// gateway store. Partial payloads must never be treated as "the operator
+	// removed every token", or a Data/OnTick call could wipe the pool.
+	StoreLoaded bool
 }
 
 type serviceDef struct {
@@ -194,6 +203,10 @@ type GitHubToken struct {
 	LastError     string    `json:"last_error,omitempty"`
 	TotalRequests int64     `json:"total_requests"`
 	TotalErrors   int64     `json:"total_errors"`
+	// Source records where the token came from. Tokens pasted in the settings
+	// are removed from the pool as soon as they disappear from the settings;
+	// harvested tokens are kept independently.
+	Source string `json:"source,omitempty"`
 }
 
 type PendingKey struct {
@@ -238,6 +251,10 @@ type State struct {
 	GitHubTokens   []GitHubToken `json:"github_tokens"`
 	Pending        []PendingKey  `json:"pending"`
 	Counters       Counters      `json:"counters"`
+	// ForgetHandled makes forget_saved_github_tokens a one-shot: it purges
+	// unlisted tokens when the operator flips it on, and does not keep
+	// deleting tokens harvested later while the switch stays on.
+	ForgetHandled bool `json:"forget_handled,omitempty"`
 }
 
 type candidate struct {
@@ -595,6 +612,10 @@ func runBackground(dir string) {
 		cfg := loadConfigFromStore()
 		if cfg.Enabled && cfg.LegalAck {
 			runCycle(activeDir(), cfg)
+		} else {
+			// Settings are authoritative even while scanning is paused: a
+			// token removed from the settings must not linger in the pool.
+			maintainGitHubTokenSettings(activeDir(), cfg)
 		}
 		wait := cfg.PollInterval
 		if wait < 15*time.Second {
@@ -726,36 +747,38 @@ func extensionStorePath() string {
 
 func defaultConfigMap() map[string]string {
 	return map[string]string{
-		"enabled":                 "false",
-		"legal_ack":               "false",
-		"create_pools":            "true",
-		"pool_mode":               "per_key",
-		"pool_prefix":             "leak",
-		"services":                "openai,anthropic,deepseek,openrouter,google,groq",
-		"github_token":            "",
-		"github_tokens":           "",
-		"harvest_github_tokens":   "true",
-		"admin_url":               "",
-		"admin_key":               "",
-		"poll_interval":           "30",
-		"per_page":                "100",
-		"max_pushes_per_cycle":    "25",
-		"max_imports_per_cycle":   "5",
-		"min_entropy":             "3.6",
-		"validate_keys":           "true",
-		"revalidate_minutes":      "60",
-		"reconcile_minutes":       "10",
-		"delete_dead":             "true",
-		"auto_fetch_models":       "true",
-		"pool_only":               "true",
-		"github_api":              defaultGitHubAPI,
-		"allow_anonymous":         "false",
-		"request_timeout_seconds": "10",
+		"enabled":                    "false",
+		"legal_ack":                  "false",
+		"create_pools":               "true",
+		"pool_mode":                  "per_key",
+		"pool_prefix":                "leak",
+		"services":                   "openai,anthropic,deepseek,openrouter,google,groq",
+		"github_token":               "",
+		"github_tokens":              "",
+		"harvest_github_tokens":      "true",
+		"forget_saved_github_tokens": "false",
+		"admin_url":                  "",
+		"admin_key":                  "",
+		"poll_interval":              "30",
+		"per_page":                   "100",
+		"max_pushes_per_cycle":       "25",
+		"max_imports_per_cycle":      "5",
+		"min_entropy":                "3.6",
+		"validate_keys":              "true",
+		"revalidate_minutes":         "60",
+		"reconcile_minutes":          "10",
+		"delete_dead":                "true",
+		"auto_fetch_models":          "true",
+		"pool_only":                  "true",
+		"github_api":                 defaultGitHubAPI,
+		"allow_anonymous":            "false",
+		"request_timeout_seconds":    "10",
 	}
 }
 
 func loadConfigFromStore() config {
 	raw := defaultConfigMap()
+	loaded := false
 	path := extensionStorePath()
 	data, err := os.ReadFile(path)
 	if err == nil {
@@ -771,11 +794,14 @@ func loadConfigFromStore() config {
 				for k, v := range rec.Config {
 					raw[k] = v
 				}
+				loaded = true
 				break
 			}
 		}
 	}
-	return configFromMap(raw)
+	cfg := configFromMap(raw)
+	cfg.StoreLoaded = loaded
+	return cfg
 }
 
 func configFromPayload(p hookPayload) config {
@@ -806,6 +832,7 @@ func configFromMap(raw map[string]string) config {
 		GitHubToken:         get("github_token", ""),
 		GitHubTokens:        get("github_tokens", ""),
 		HarvestGitHubTokens: parseBool(get("harvest_github_tokens", "true"), true),
+		ForgetSavedTokens:   parseBool(get("forget_saved_github_tokens", "false"), false),
 		AdminURL:            strings.TrimRight(get("admin_url", ""), "/"),
 		AdminKey:            get("admin_key", ""),
 		PollInterval:        time.Duration(maxInt(parseInt(get("poll_interval", "30"), defaultPollSecs), 15)) * time.Second,
@@ -1448,7 +1475,7 @@ func applyRateLimitMeta(meta *githubMeta, res httpResult) {
 	meta.Reset = rl.Resources.Core.Reset
 }
 
-func addGitHubTokenToState(st *State, cfg config, raw string, meta *githubMeta) bool {
+func addGitHubTokenToState(st *State, raw string, meta *githubMeta, source string) bool {
 	raw = strings.TrimSpace(raw)
 	if raw == "" || meta == nil {
 		return false
@@ -1463,16 +1490,28 @@ func addGitHubTokenToState(st *State, cfg config, raw string, meta *githubMeta) 
 	}
 	hash := sha256Hex(raw)
 	for i := range st.GitHubTokens {
-		if st.GitHubTokens[i].Hash == hash {
-			// Refresh quota metadata for an already-known token.
-			st.GitHubTokens[i].Remaining = meta.Remaining
-			st.GitHubTokens[i].Reset = meta.Reset
-			st.GitHubTokens[i].LastError = ""
-			if st.GitHubTokens[i].Status == "" || st.GitHubTokens[i].Status == "revoked" {
-				st.GitHubTokens[i].Status = initialStatus
-			}
-			return false
+		t := &st.GitHubTokens[i]
+		if t.Hash != hash {
+			continue
 		}
+		// Refresh quota metadata for an already-known token.
+		t.Remaining = meta.Remaining
+		t.Reset = meta.Reset
+		t.LastError = ""
+		if t.Status == "" || t.Status == "revoked" {
+			t.Status = initialStatus
+		}
+		// A token explicitly pasted in the settings is settings-owned from
+		// now on; harvesting must not downgrade that ownership or deleting
+		// the setting would leave the token behind.
+		if source == tokenSourceHarvest {
+			if t.Source == "" {
+				t.Source = source
+			}
+		} else if source != "" {
+			t.Source = source
+		}
+		return false
 	}
 	if len(st.GitHubTokens) >= maxGitHubTokens {
 		return false
@@ -1481,6 +1520,7 @@ func addGitHubTokenToState(st *State, cfg config, raw string, meta *githubMeta) 
 		Token:     raw,
 		Hash:      hash,
 		Kind:      kind,
+		Source:    source,
 		UserID:    meta.UserID,
 		Login:     meta.Login,
 		Scopes:    append([]string(nil), meta.Scopes...),
@@ -1491,22 +1531,149 @@ func addGitHubTokenToState(st *State, cfg config, raw string, meta *githubMeta) 
 	return true
 }
 
-func addBootstrapGitHubTokens(st *State, cfg config) {
-	candidates := splitList(cfg.GitHubToken)
-	candidates = append(candidates, splitList(cfg.GitHubTokens)...)
-	if v := strings.TrimSpace(os.Getenv("GITHUB_TOKEN")); v != "" {
-		candidates = append(candidates, v)
-	}
-	if v := strings.TrimSpace(os.Getenv("GH_TOKEN")); v != "" {
-		candidates = append(candidates, v)
-	}
-	for _, raw := range candidates {
+type configuredGitHubToken struct {
+	raw    string
+	source string
+}
+
+// configuredGitHubTokens lists the tokens the operator supplied through the
+// settings and the environment. These are authoritative: the state file must
+// not keep a copy after the setting is cleared.
+func configuredGitHubTokens(cfg config) []configuredGitHubToken {
+	var out []configuredGitHubToken
+	seen := make(map[string]bool)
+	add := func(raw, source string) {
 		raw = strings.TrimSpace(raw)
 		if raw == "" {
+			return
+		}
+		hash := sha256Hex(raw)
+		if seen[hash] {
+			return
+		}
+		seen[hash] = true
+		out = append(out, configuredGitHubToken{raw: raw, source: source})
+	}
+	for _, raw := range splitList(cfg.GitHubToken) {
+		add(raw, tokenSourceSetting)
+	}
+	for _, raw := range splitList(cfg.GitHubTokens) {
+		add(raw, tokenSourceSetting)
+	}
+	add(os.Getenv("GITHUB_TOKEN"), tokenSourceEnv)
+	add(os.Getenv("GH_TOKEN"), tokenSourceEnv)
+	return out
+}
+
+func configuredGitHubTokenSources(cfg config) map[string]string {
+	tokens := configuredGitHubTokens(cfg)
+	out := make(map[string]string, len(tokens))
+	for _, t := range tokens {
+		out[sha256Hex(t.raw)] = t.source
+	}
+	return out
+}
+
+func removeGitHubTokenAt(st *State, idx int) {
+	if idx < 0 || idx >= len(st.GitHubTokens) {
+		return
+	}
+	st.GitHubTokens = append(st.GitHubTokens[:idx], st.GitHubTokens[idx+1:]...)
+}
+
+// harvestedTokenEvidence reports whether a token in the state is also present
+// in the findings, i.e. it was discovered by the scanner rather than pasted
+// into the settings. Old state entries have no source, so migration uses this
+// to avoid deleting harvested tokens.
+func harvestedTokenEvidence(st *State, hash string) bool {
+	for i := range st.Findings {
+		if st.Findings[i].Service == "github" && st.Findings[i].KeyHash == hash {
+			return true
+		}
+	}
+	return false
+}
+
+// reconcileGitHubTokenSettings removes tokens that belong to a setting or an
+// environment variable but are no longer present there, classifies legacy
+// entries, and applies the one-shot forget switch. It performs no network
+// calls, so it can run even when scanning is disabled.
+func reconcileGitHubTokenSettings(st *State, cfg config) bool {
+	if !cfg.StoreLoaded {
+		return false
+	}
+	changed := false
+	configured := configuredGitHubTokenSources(cfg)
+
+	for i := range st.GitHubTokens {
+		t := &st.GitHubTokens[i]
+		if t.Source != "" {
 			continue
 		}
+		switch {
+		case configured[t.Hash] != "":
+			t.Source = configured[t.Hash]
+		case harvestedTokenEvidence(st, t.Hash):
+			t.Source = tokenSourceHarvest
+		default:
+			t.Source = tokenSourceLegacy
+		}
+		changed = true
+	}
+
+	if st.Version < 2 {
+		// v1 kept every token forever. Drop the leftovers that neither the
+		// settings nor a harvest finding can account for; this is how a token
+		// pasted in an old version finally disappears.
+		for i := len(st.GitHubTokens) - 1; i >= 0; i-- {
+			if st.GitHubTokens[i].Source != tokenSourceLegacy {
+				continue
+			}
+			removeGitHubTokenAt(st, i)
+			changed = true
+		}
+		st.Version = 2
+		changed = true
+	}
+
+	for i := len(st.GitHubTokens) - 1; i >= 0; i-- {
+		t := st.GitHubTokens[i]
+		if t.Source != tokenSourceSetting && t.Source != tokenSourceEnv {
+			continue
+		}
+		if _, ok := configured[t.Hash]; ok {
+			continue
+		}
+		removeGitHubTokenAt(st, i)
+		changed = true
+	}
+
+	if !cfg.ForgetSavedTokens {
+		if st.ForgetHandled {
+			st.ForgetHandled = false
+			changed = true
+		}
+		return changed
+	}
+	if st.ForgetHandled {
+		return changed
+	}
+	for i := len(st.GitHubTokens) - 1; i >= 0; i-- {
+		if _, ok := configured[st.GitHubTokens[i].Hash]; ok {
+			continue
+		}
+		removeGitHubTokenAt(st, i)
+		changed = true
+	}
+	st.ForgetHandled = true
+	return true
+}
+
+func addBootstrapGitHubTokens(st *State, cfg config) {
+	reconcileGitHubTokenSettings(st, cfg)
+	for _, tok := range configuredGitHubTokens(cfg) {
+		hash := sha256Hex(tok.raw)
 		known := false
-		hash := sha256Hex(raw)
 		for i := range st.GitHubTokens {
 			if st.GitHubTokens[i].Hash == hash {
 				known = true
@@ -1516,13 +1683,13 @@ func addBootstrapGitHubTokens(st *State, cfg config) {
 		if known {
 			continue
 		}
-		meta, err := validateGitHubToken(cfg, raw)
+		meta, err := validateGitHubToken(cfg, tok.raw)
 		if err != nil {
-			st.LastError = "GitHub token: " + redactKey(err.Error(), raw)
+			st.LastError = "GitHub token: " + redactKey(err.Error(), tok.raw)
 			st.Counters.Errors++
 			continue
 		}
-		addGitHubTokenToState(st, cfg, raw, meta)
+		addGitHubTokenToState(st, tok.raw, meta, tok.source)
 	}
 }
 
@@ -2346,7 +2513,7 @@ func validateCandidates(dir string, cfg config, st *State, candidates []candidat
 				st.Counters.Validated++
 				continue
 			}
-			addGitHubTokenToState(st, cfg, cand.Key, meta)
+			addGitHubTokenToState(st, cand.Key, meta, tokenSourceHarvest)
 			finding.Valid = true
 			finding.Status = "github-pool"
 			if githubTokenKind(cand.Key) == kindAppInstall {
@@ -2921,6 +3088,22 @@ func runCycle(dir string, cfg config) {
 	runCycleNow(dir, cfg)
 }
 
+// maintainGitHubTokenSettings applies the no-network part of the token
+// reconciliation (settings ownership, legacy migration, forget switch). It is
+// used while scanning is disabled, where a full cycle never runs.
+func maintainGitHubTokenSettings(dir string, cfg config) {
+	if strings.TrimSpace(dir) == "" {
+		dir = activeDir()
+	}
+	st := loadState(dir)
+	if !reconcileGitHubTokenSettings(&st, cfg) {
+		return
+	}
+	if err := saveState(dir, &st); err != nil {
+		fmt.Println("[leak-pools] state save failed:", err)
+	}
+}
+
 func runCycleNow(dir string, cfg config) {
 	if !cfg.Enabled || !cfg.LegalAck {
 		return
@@ -2957,6 +3140,7 @@ func hookStart(raw string) string {
 	setActiveDir(dir)
 	ensureStarted(dir)
 	cfg := loadConfigFromStore()
+	maintainGitHubTokenSettings(dir, cfg)
 	if cfg.Enabled && cfg.LegalAck {
 		triggerCycle(dir, cfg)
 	}
@@ -3229,8 +3413,8 @@ func githubPayload(cfg config, st *State) string {
 	items := make([]string, 0, maxListItems)
 	for _, t := range st.GitHubTokens {
 		items = append(items, fmt.Sprintf(
-			"%s | %s | %s | %s | remaining %d | %s",
-			orDash(t.Login), t.Kind, maskKey(t.Token), t.Status, t.Remaining, orDash(truncate(t.LastError, 100))))
+			"%s | %s | %s | %s | from %s | remaining %d | %s",
+			orDash(t.Login), t.Kind, maskKey(t.Token), t.Status, orDash(t.Source), t.Remaining, orDash(truncate(t.LastError, 100))))
 	}
 	blocks := []interface{}{
 		map[string]interface{}{"kind": "kv", "kv": stats},
@@ -3241,7 +3425,7 @@ func githubPayload(cfg config, st *State) string {
 		blocks = append(blocks, map[string]interface{}{"kind": "list", "items": items})
 	}
 	blocks = append(blocks, map[string]interface{}{"kind": "divider"})
-	blocks = append(blocks, map[string]interface{}{"kind": "text", "text": "Supported token kinds: classic PAT (ghp_), fine-grained PAT (github_pat_), OAuth (gho_) and app user (ghu_). Tokens from the same account share one 5,000/hour budget; different accounts stack. Installation tokens (ghs_) are detected and validated but marked unsupported because the events feed is user-scoped."})
+	blocks = append(blocks, map[string]interface{}{"kind": "text", "text": "Supported token kinds: classic PAT (ghp_), fine-grained PAT (github_pat_), OAuth (gho_) and app user (ghu_). Tokens from the same account share one 5,000/hour budget; different accounts stack. Installation tokens (ghs_) are detected and validated but marked unsupported because the events feed is user-scoped. Tokens marked from settings disappear when you clear the settings field; enable forget_saved_github_tokens to purge tokens pasted in older versions."})
 	return mustJSON(map[string]interface{}{"stats": stats, "blocks": blocks})
 }
 
