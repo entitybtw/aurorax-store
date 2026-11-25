@@ -443,8 +443,11 @@ var (
 	}{}
 
 	cycleGate    = make(chan struct{}, 1)
-	startOnce    sync.Once
+	loopMu       sync.Mutex
+	loopRunning  bool
 	runtimeRunID string
+	// realEnv holds the process environment; see readProcessEnv.
+	realEnv = readProcessEnv()
 
 	invMu    sync.Mutex
 	invCache adminInventory
@@ -525,7 +528,7 @@ var allowedExtensions = map[string]bool{
 var booted = autoStart()
 
 func autoStart() bool {
-	if strings.TrimSpace(os.Getenv("AURORA_LEAK_POOLS_DISABLE_AUTOSTART")) == "1" {
+	if strings.TrimSpace(envValue("AURORA_LEAK_POOLS_DISABLE_AUTOSTART")) == "1" {
 		return true
 	}
 	dir := deriveStateDir()
@@ -539,11 +542,36 @@ func autoStart() bool {
 	return true
 }
 
-func deriveStateDir() string {
-	if v := strings.TrimSpace(os.Getenv("AURORA_LEAK_POOLS_STATE_DIR")); v != "" {
+// Yaegi evaluates addons in restricted mode, where os.Getenv reads only a
+// virtual environment that starts empty, so the container's variables are
+// invisible from the script. /proc/self/environ restores them, which keeps
+// GITHUB_TOKEN/GH_TOKEN, AURORA_MASTER_KEY and the AURORA_* overrides working.
+func readProcessEnv() map[string]string {
+	out := make(map[string]string)
+	data, err := os.ReadFile("/proc/self/environ")
+	if err != nil || len(data) == 0 {
+		return out
+	}
+	for _, kv := range strings.Split(string(data), "\x00") {
+		if i := strings.Index(kv, "="); i > 0 {
+			out[kv[:i]] = kv[i+1:]
+		}
+	}
+	return out
+}
+
+func envValue(key string) string {
+	if v := os.Getenv(key); v != "" {
 		return v
 	}
-	base := strings.TrimSpace(os.Getenv("AURORA_EXTENSIONS_FILES_DIR"))
+	return realEnv[key]
+}
+
+func deriveStateDir() string {
+	if v := strings.TrimSpace(envValue("AURORA_LEAK_POOLS_STATE_DIR")); v != "" {
+		return v
+	}
+	base := strings.TrimSpace(envValue("AURORA_EXTENSIONS_FILES_DIR"))
 	if base == "" {
 		base = "configs/extensions"
 	}
@@ -569,15 +597,32 @@ func activeDir() string {
 	return activeD.dir
 }
 
+// ensureStarted starts the background loop once, but unlike sync.Once it can
+// start it again after the loop stopped. The loop exits when the extension is
+// unapplied or another interpreter claims ownership, and a gateway-side apply
+// can evaluate the program a moment before it records applied=true; in both
+// cases a later hook (Data/OnApply) must be able to revive the loop.
 func ensureStarted(dir string) {
 	dir = strings.TrimSpace(dir)
 	if dir == "" {
 		dir = deriveStateDir()
 	}
 	setActiveDir(dir)
-	startOnce.Do(func() {
-		go runBackground(dir)
-	})
+	loopMu.Lock()
+	if loopRunning {
+		loopMu.Unlock()
+		return
+	}
+	loopRunning = true
+	loopMu.Unlock()
+	go func() {
+		defer func() {
+			loopMu.Lock()
+			loopRunning = false
+			loopMu.Unlock()
+		}()
+		runBackground(dir)
+	}()
 }
 
 func runBackground(dir string) {
@@ -591,6 +636,13 @@ func runBackground(dir string) {
 	// The old loop checks ownership every couple of seconds, so an in-place
 	// update does not leave stale code running until the next restart.
 	runID := runtimeRunID
+	// The gateway materialises and evaluates addon files before it flips
+	// applied=true in the extension store, so the very first ownership check
+	// can see a stale "not applied" record and kill the freshly started loop.
+	// Wait for the store to catch up instead of losing the loop for good.
+	if !waitForApplied(90 * time.Second) {
+		return
+	}
 	for {
 		if !runtimeOwned(dir, runID) {
 			return
@@ -610,12 +662,12 @@ func runBackground(dir string) {
 			return
 		}
 		cfg := loadConfigFromStore()
+		// Settings are authoritative even while scanning is paused: a token
+		// removed from the settings must not linger in the pool. Doing this
+		// before the (slow) scan keeps removals immediate.
+		maintainGitHubTokenSettings(activeDir(), cfg)
 		if cfg.Enabled && cfg.LegalAck {
 			runCycle(activeDir(), cfg)
-		} else {
-			// Settings are authoritative even while scanning is paused: a
-			// token removed from the settings must not linger in the pool.
-			maintainGitHubTokenSettings(activeDir(), cfg)
 		}
 		wait := cfg.PollInterval
 		if wait < 15*time.Second {
@@ -665,6 +717,22 @@ func runtimeOwned(dir, id string) bool {
 		return true
 	}
 	return strings.TrimSpace(string(data)) == id
+}
+
+// waitForApplied waits (briefly) for the extension store to mark this addon
+// as applied. Returns true when the extension is applied or when the store
+// cannot answer at all; false only when it stays not-applied past limit.
+func waitForApplied(limit time.Duration) bool {
+	const step = 500 * time.Millisecond
+	for waited := time.Duration(0); ; waited += step {
+		if extensionStillApplied() {
+			return true
+		}
+		if waited >= limit {
+			return false
+		}
+		time.Sleep(step)
+	}
 }
 
 // sleepOwned sleeps in short slices so an unapply or a new owner is noticed
@@ -735,7 +803,7 @@ func extensionStillApplied() bool {
 }
 
 func extensionStorePath() string {
-	if v := strings.TrimSpace(os.Getenv("AURORA_EXTENSIONS_PATH")); v != "" {
+	if v := strings.TrimSpace(envValue("AURORA_EXTENSIONS_PATH")); v != "" {
 		return v
 	}
 	return "configs/extensions.json"
@@ -902,12 +970,12 @@ func parseServices(v string) map[string]bool {
 }
 
 func defaultAdminURL() string {
-	port := strings.TrimSpace(os.Getenv("PORT"))
+	port := strings.TrimSpace(envValue("PORT"))
 	port = strings.TrimPrefix(port, ":")
 	if port == "" {
 		port = "8080"
 	}
-	base := strings.TrimSpace(os.Getenv("BASE_PATH"))
+	base := strings.TrimSpace(envValue("BASE_PATH"))
 	if base != "" && !strings.HasPrefix(base, "/") {
 		base = "/" + base
 	}
@@ -920,11 +988,11 @@ func defaultAdminURL() string {
 // the caller), which keeps the addon usable with an admin key separate from
 // the gateway master key.
 func discoverMasterKey() string {
-	if v := strings.TrimSpace(os.Getenv("AURORA_MASTER_KEY")); v != "" {
+	if v := strings.TrimSpace(envValue("AURORA_MASTER_KEY")); v != "" {
 		return v
 	}
 	paths := []string{}
-	if v := strings.TrimSpace(os.Getenv("AURORA_CONFIG_PATH")); v != "" {
+	if v := strings.TrimSpace(envValue("AURORA_CONFIG_PATH")); v != "" {
 		paths = append(paths, v)
 	}
 	paths = append(paths, "configs/config.yaml", "config.yaml")
@@ -948,12 +1016,12 @@ func discoverMasterKey() string {
 				if i := strings.Index(name, ":-"); i >= 0 {
 					def := name[i+2:]
 					name = name[:i]
-					if env := strings.TrimSpace(os.Getenv(name)); env != "" {
+					if env := strings.TrimSpace(envValue(name)); env != "" {
 						return env
 					}
 					return def
 				}
-				if env := strings.TrimSpace(os.Getenv(name)); env != "" {
+				if env := strings.TrimSpace(envValue(name)); env != "" {
 					return env
 				}
 				continue
@@ -1560,8 +1628,8 @@ func configuredGitHubTokens(cfg config) []configuredGitHubToken {
 	for _, raw := range splitList(cfg.GitHubTokens) {
 		add(raw, tokenSourceSetting)
 	}
-	add(os.Getenv("GITHUB_TOKEN"), tokenSourceEnv)
-	add(os.Getenv("GH_TOKEN"), tokenSourceEnv)
+	add(envValue("GITHUB_TOKEN"), tokenSourceEnv)
+	add(envValue("GH_TOKEN"), tokenSourceEnv)
 	return out
 }
 
@@ -3478,7 +3546,7 @@ func enabledLabel(v bool) string {
 
 func adminKeySource(cfg config) string {
 	if strings.TrimSpace(cfg.AdminKey) != "" {
-		if strings.TrimSpace(os.Getenv("AURORA_MASTER_KEY")) == strings.TrimSpace(cfg.AdminKey) {
+		if strings.TrimSpace(envValue("AURORA_MASTER_KEY")) == strings.TrimSpace(cfg.AdminKey) {
 			return "AURORA_MASTER_KEY"
 		}
 		return "extension setting or gateway config"
