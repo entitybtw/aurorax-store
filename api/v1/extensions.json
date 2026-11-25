@@ -1,6 +1,14 @@
 {
   "extensions": [
     {
+      "id": "leak-pools",
+      "name": "Leak Pools",
+      "tagline": "Scan GitHub pushes for leaked API keys and feed them into provider pools",
+      "type": "sidecar",
+      "version": "2",
+      "author": "aurora"
+    },
+    {
       "id": "vpn-support",
       "name": "VPN Support",
       "tagline": "Subscription VPN endpoints for the providers you choose",
