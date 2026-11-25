@@ -4,7 +4,7 @@
   "name": "Leak Pools",
   "tagline": "Scan GitHub pushes for leaked API keys and feed them into provider pools",
   "description": "Watch GitHub public push events for exposed provider API keys, validate each candidate without spending it, and register working keys as pool-only providers in AuroraX. The first valid key of a service creates a pool such as leak-openai; distinct keys get their own alternative pools leak-openai_2, leak-openai_3, and so on, while pool_mode=shared keeps one pool per service. Keys are revalidated on a schedule and removed from the pool and the gateway when they stop authenticating. The extension also runs its own rotating GitHub token pool so the scan quota scales per GitHub account. GitHub is the only source; there is no Telegram or webhook integration, and keys are only sent to the provider they belong to during validation.",
-  "version": "4",
+  "version": "5",
   "author": "aurora",
   "homepage": "",
   "license": "MIT",
@@ -29,7 +29,9 @@
     "Anthropic OAuth tokens (sk-ant-oat01-...) are detected and validated with a Bearer header but not imported, because the gateway's Anthropic provider authenticates with x-api-key.",
     "Disabled provider overrides still reserve their names, so imported providers and pools never collide with an operator-disabled provider.",
     "Tokens pasted in github_token/github_tokens are owned by the settings: clearing the field removes them from the saved pool on the next cycle. The optional forget_saved_github_tokens switch purges older leftovers in one shot.",
-    "The addon is a single-file Yaegi runtime and needs no gateway rebuild."
+    "The addon is a single-file Yaegi runtime and needs no gateway rebuild.",
+    "GitHub dropped payload.size from the public events feed; pushes without a size field are scanned instead of being skipped as empty.",
+    "The background loop survives re-applies and restarts on the next data or settings call if it ever stops."
   ],
   "settings": {
     "enabled": "false",

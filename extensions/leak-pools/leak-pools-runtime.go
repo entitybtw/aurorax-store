@@ -295,7 +295,9 @@ type ghRepo struct {
 type ghPushPayload struct {
 	Before string `json:"before"`
 	Head   string `json:"head"`
-	Size   int    `json:"size"`
+	// Size is a pointer because the public events feed now omits it. A
+	// missing size must not be mistaken for an empty push.
+	Size *int `json:"size"`
 }
 
 type ghEvent struct {
@@ -2891,14 +2893,11 @@ func processPush(cfg config, st *State, ev ghEvent) ([]candidate, bool) {
 	if strings.HasSuffix(actor, "[bot]") || actor == "dependabot" || actor == "renovate" || actor == "github-actions" {
 		return nil, true
 	}
+	if !pushUsable(ev) {
+		return nil, true
+	}
 	before := strings.TrimSpace(ev.Payload.Before)
 	head := strings.TrimSpace(ev.Payload.Head)
-	if before == "" || head == "" {
-		return nil, true
-	}
-	if strings.HasPrefix(before, "00000000") || strings.HasPrefix(head, "00000000") || ev.Payload.Size == 0 {
-		return nil, true
-	}
 	repo := strings.TrimSpace(ev.Repo.Name)
 	if repo == "" {
 		return nil, true
@@ -2942,6 +2941,25 @@ func processPush(cfg config, st *State, ev ghEvent) ([]candidate, bool) {
 	}
 	st.Counters.PushesScanned++
 	return out, true
+}
+
+// pushUsable reports whether a PushEvent carries a diff worth comparing.
+// The public events feed dropped payload.size (and commits), so a missing
+// size must not be read as "empty push" — that skipped every real push.
+// Range deletions still show up as an all-zero before/head pointer.
+func pushUsable(ev ghEvent) bool {
+	before := strings.TrimSpace(ev.Payload.Before)
+	head := strings.TrimSpace(ev.Payload.Head)
+	if before == "" || head == "" {
+		return false
+	}
+	if strings.HasPrefix(before, "00000000") || strings.HasPrefix(head, "00000000") {
+		return false
+	}
+	if ev.Payload.Size != nil && *ev.Payload.Size == 0 {
+		return false
+	}
+	return true
 }
 
 func allowedFile(name string) bool {
